@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>バドミントン ミス記録</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+    background: #f4f5f7;
+    color: #222;
+  }
+  header { padding: 12px 16px; background: #1f6f4a; color: #fff; }
+  header h1 { margin: 0; font-size: 18px; }
+  main {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  /* PC：動画の横にコート図 */
+  @media (min-width: 900px) {
+    main { grid-template-columns: 2fr 1fr; }
+  }
+  .card { background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .card h2 { margin: 0 0 8px; font-size: 15px; }
+  .file-btn {
+    display: inline-block; padding: 10px 16px; border-radius: 8px;
+    background: #1f6f4a; color: #fff; cursor: pointer; font-size: 15px;
+  }
+  .file-btn input { display: none; }
+  #fileName { margin-left: 8px; font-size: 13px; color: #666; }
+  video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; display: none; }
+  .placeholder { margin-top: 12px; padding: 40px 12px; text-align: center; color: #888; border: 2px dashed #ccc; border-radius: 8px; }
+  #court { width: 100%; max-width: 360px; display: block; margin: 0 auto; touch-action: manipulation; }
+  .hint { font-size: 12px; color: #777; text-align: center; margin: 6px 0 0; }
+
+  /* 記録一覧 */
+  .list-card { grid-column: 1 / -1; }
+  #records { list-style: none; margin: 0; padding: 0; }
+  #records li {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 4px; border-bottom: 1px solid #eee; cursor: pointer;
+  }
+  #records li:hover { background: #f7faf8; }
+  .time { font-variant-numeric: tabular-nums; font-weight: bold; min-width: 52px; }
+  .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; color: #fff; }
+  .tag.point { background: #2a7de1; }
+  .tag.miss { background: #d9443b; }
+  .rec-text { flex: 1; font-size: 14px; }
+  .del-btn { border: none; background: none; color: #999; font-size: 18px; cursor: pointer; padding: 4px 8px; }
+  .empty { color: #888; font-size: 14px; padding: 8px 4px; }
+
+  /* 記録入力ダイアログ */
+  dialog { border: none; border-radius: 14px; padding: 14px 12px; width: min(96vw, 380px); max-width: 96vw; }
+  dialog::backdrop { background: rgba(0,0,0,.4); }
+  dialog h3 { margin: 0 0 4px; font-size: 16px; }
+  .dlg-time { font-size: 13px; color: #666; margin-bottom: 12px; }
+  .group { margin-bottom: 12px; }
+  .group-label { font-size: 13px; color: #555; margin-bottom: 6px; }
+  .choices { display: flex; flex-wrap: wrap; gap: 6px; }
+  .choices .break { flex-basis: 100%; height: 0; }
+  .choices button {
+    padding: 8px 10px; border: 1px solid #ccc; border-radius: 8px;
+    background: #fff; font-size: 14px; cursor: pointer;
+  }
+  .choices button.selected { background: #1f6f4a; border-color: #1f6f4a; color: #fff; }
+  .dlg-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+  .dlg-actions button { padding: 10px 16px; border-radius: 8px; border: none; font-size: 15px; cursor: pointer; }
+  #cancelBtn { background: #eee; }
+  #saveBtn { background: #1f6f4a; color: #fff; }
+  #saveBtn:disabled { background: #aaa; }
+</style>
+</head>
+<body>
+<header><h1>🏸 バドミントン ミス記録（試作版）</h1></header>
+
+<main>
+  <!-- 動画エリア -->
+  <section class="card">
+    <label class="file-btn">
+      動画を選ぶ
+      <input type="file" id="fileInput" accept="video/*">
+    </label>
+    <span id="fileName"></span>
+    <div class="placeholder" id="placeholder">動画ファイルを選ぶとここで再生されます<br>（動画はサーバーに送られません）</div>
+    <video id="video" controls playsinline></video>
+  </section>
+
+  <!-- コート図エリア（シングルス・手前側の半面。上がネット） -->
+  <section class="card">
+    <h2>コート図</h2>
+    <!-- 単位はメートル。コート：幅5.18m × 奥行6.70m。外側に1mの余白（アウト位置も押せるように） -->
+    <svg id="court" viewBox="-1 -0.6 7.18 8.3" xmlns="http://www.w3.org/2000/svg">
+      <rect x="-1" y="-0.6" width="7.18" height="8.3" fill="#e9eef0"/>
+      <rect x="0" y="0" width="5.18" height="6.70" fill="#2e8b57"/>
+      <g stroke="#fff" stroke-width="0.04" fill="none">
+        <rect x="0" y="0" width="5.18" height="6.70"/>
+        <line x1="0" y1="1.98" x2="5.18" y2="1.98"/>   <!-- ショートサービスライン -->
+        <line x1="2.59" y1="1.98" x2="2.59" y2="6.70"/> <!-- センターライン -->
+      </g>
+      <!-- ネット -->
+      <line x1="-0.3" y1="0" x2="5.48" y2="0" stroke="#333" stroke-width="0.08"/>
+      <text x="2.59" y="-0.2" font-size="0.3" text-anchor="middle" fill="#555">ネット</text>
+      <g id="dots"></g>
+    </svg>
+    <p class="hint">動画を一時停止してコートをタップすると記録できます<br>
+      <span style="color:#2a7de1">●</span> 得点　<span style="color:#d9443b">●</span> ミス</p>
+  </section>
+
+  <!-- 記録一覧 -->
+  <section class="card list-card">
+    <h2>記録一覧（押すとその場面から再生）</h2>
+    <ul id="records"></ul>
+  </section>
+</main>
+
+<!-- 記録入力ダイアログ -->
+<dialog id="dialog">
+  <h3>記録する</h3>
+  <div class="dlg-time" id="dlgTime"></div>
+  <div class="group">
+    <div class="group-label">ショットの種類</div>
+    <div class="choices" data-key="shot"></div>
+  </div>
+  <div class="group">
+    <div class="group-label">結果</div>
+    <div class="choices" data-key="result"></div>
+  </div>
+  <div class="group" id="missGroup">
+    <div class="group-label">ミスの種類</div>
+    <div class="choices" data-key="missType"></div>
+  </div>
+  <div class="dlg-actions">
+    <button id="cancelBtn">やめる</button>
+    <button id="saveBtn" disabled>保存</button>
+  </div>
+</dialog>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const video = document.getElementById('video');
+  const placeholder = document.getElementById('placeholder');
+  const fileName = document.getElementById('fileName');
+
+  // 選んだ動画をブラウザ内だけで再生（URL.createObjectURL はファイルをアップロードせずに参照する仕組み）
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    if (video.src) URL.revokeObjectURL(video.src);
+    video.src = URL.createObjectURL(file);
+    video.style.display = 'block';
+    placeholder.style.display = 'none';
+    fileName.textContent = file.name;
+  });
+
+  // ===== 記録の保存・読み込み（localStorage＝ブラウザ内の保存場所。閉じても残る） =====
+  const STORAGE_KEY = 'badminton-records';
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch (e) { records = []; }
+  function saveRecords() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }
+
+  // ===== 選択肢 =====
+  const OPTIONS = {
+    // null の位置で改行して表示する
+    shot: ['クリア', 'スマッシュ', 'カット', 'ドロップ', null,
+           'プッシュ', 'ドライブ', null,
+           'ピン', 'ロブ', null,
+           'アタックロブ', 'フェイント', 'その他'],
+    result: ['得点', 'ミス'],
+    missType: ['ネット', 'アウト', 'その他'],
+  };
+
+  // 秒数を「分:秒」に変換
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  // ===== コート図のタップ → ダイアログを開く =====
+  const court = document.getElementById('court');
+  const dialog = document.getElementById('dialog');
+  const saveBtn = document.getElementById('saveBtn');
+  const missGroup = document.getElementById('missGroup');
+  let draft = null; // 入力中の記録
+
+  court.addEventListener('click', (e) => {
+    if (!video.src) { alert('先に動画を選んでください'); return; }
+    if (!video.paused) { alert('動画を一時停止してからタップしてください'); return; }
+
+    // タップした画面上の位置を、コート図の座標（メートル）に変換
+    const pt = court.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(court.getScreenCTM().inverse());
+
+    draft = { time: video.currentTime, x: p.x, y: p.y, shot: null, result: null, missType: null };
+    document.getElementById('dlgTime').textContent = '動画の時間：' + formatTime(draft.time);
+    renderChoices();
+    dialog.showModal();
+  });
+
+  // 選択肢ボタンを描画
+  function renderChoices() {
+    document.querySelectorAll('.choices').forEach((box) => {
+      const key = box.dataset.key;
+      box.innerHTML = '';
+      OPTIONS[key].forEach((label) => {
+        if (label === null) { box.appendChild(Object.assign(document.createElement('div'), { className: 'break' })); return; }
+        const btn = document.createElement('button');
+        btn.textContent = label;
+        if (draft[key] === label) btn.className = 'selected';
+        btn.onclick = () => {
+          draft[key] = label;
+          if (key === 'result' && label === '得点') draft.missType = null;
+          renderChoices();
+        };
+        box.appendChild(btn);
+      });
+    });
+    // ミスの種類は「ミス」のときだけ表示
+    missGroup.style.display = draft.result === 'ミス' ? 'block' : 'none';
+    // 必要な項目がそろったら保存ボタンを押せるように
+    const ok = draft.shot && draft.result && (draft.result === '得点' || draft.missType);
+    saveBtn.disabled = !ok;
+  }
+
+  document.getElementById('cancelBtn').onclick = () => dialog.close();
+  saveBtn.onclick = () => {
+    draft.id = Date.now();
+    records.push(draft);
+    records.sort((a, b) => a.time - b.time);
+    saveRecords();
+    dialog.close();
+    render();
+  };
+
+  // ===== コート上の点と一覧を描画 =====
+  const dots = document.getElementById('dots');
+  const list = document.getElementById('records');
+
+  function render() {
+    // 点
+    dots.innerHTML = '';
+    records.forEach((r) => {
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', r.x);
+      c.setAttribute('cy', r.y);
+      c.setAttribute('r', 0.15);
+      c.setAttribute('fill', r.result === '得点' ? '#2a7de1' : '#d9443b');
+      c.setAttribute('stroke', '#fff');
+      c.setAttribute('stroke-width', 0.03);
+      dots.appendChild(c);
+    });
+
+    // 一覧
+    list.innerHTML = '';
+    if (records.length === 0) {
+      list.innerHTML = '<li class="empty">まだ記録はありません</li>';
+      return;
+    }
+    records.forEach((r) => {
+      const li = document.createElement('li');
+      const isMiss = r.result === 'ミス';
+      li.innerHTML =
+        '<span class="time">' + formatTime(r.time) + '</span>' +
+        '<span class="tag ' + (isMiss ? 'miss' : 'point') + '">' + r.result + '</span>' +
+        '<span class="rec-text">' + r.shot + (isMiss ? '（' + r.missType + '）' : '') + '</span>' +
+        '<button class="del-btn" title="削除">✕</button>';
+
+      // 押すとその時間に移動して再生
+      li.onclick = () => {
+        if (!video.src) { alert('先に動画を選んでください'); return; }
+        video.currentTime = r.time;
+        video.play();
+      };
+      // 削除（一覧の移動処理が動かないように止める）
+      li.querySelector('.del-btn').onclick = (e) => {
+        e.stopPropagation();
+        if (!confirm('この記録を削除しますか？')) return;
+        records = records.filter((x) => x.id !== r.id);
+        saveRecords();
+        render();
+      };
+      list.appendChild(li);
+    });
+  }
+
+  render();
+</script>
+</body>
+</html>
