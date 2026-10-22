@@ -23,7 +23,7 @@
     <video id="video" controls playsinline></video>
   </section>
 
-  <!-- コート図エリア（シングルス・手前側の半面。上がネット） -->
+  <!-- コート図エリア（シングルス・両面。上が相手コート、下が自分コート） -->
   <section class="card">
     <!-- 再生操作（コートのすぐ上に置いて、指の移動を少なくする） -->
     <div class="controls">
@@ -32,22 +32,10 @@
       <button id="fwdBtn">5秒 ▶</button>
     </div>
     <div class="now" id="nowTime">0:00</div>
-    <!-- 単位はメートル。コート：幅5.18m × 奥行6.70m。外側に1mの余白（アウト位置も押せるように） -->
-    <svg id="court" viewBox="-1 -0.6 7.18 8.3" xmlns="http://www.w3.org/2000/svg">
-      <rect x="-1" y="-0.6" width="7.18" height="8.3" fill="#e9eef0"/>
-      <rect x="0" y="0" width="5.18" height="6.70" fill="#2e8b57"/>
-      <g stroke="#fff" stroke-width="0.04" fill="none">
-        <rect x="0" y="0" width="5.18" height="6.70"/>
-        <line x1="0" y1="1.98" x2="5.18" y2="1.98"/>   <!-- ショートサービスライン -->
-        <line x1="2.59" y1="1.98" x2="2.59" y2="6.70"/> <!-- センターライン -->
-      </g>
-      <!-- ネット -->
-      <line x1="-0.3" y1="0" x2="5.48" y2="0" stroke="#333" stroke-width="0.08"/>
-      <text x="2.59" y="-0.2" font-size="0.3" text-anchor="middle" fill="#555">ネット</text>
-      <g id="dots"></g>
-    </svg>
-    <p class="hint">動画を一時停止してコートをタップすると記録できます<br>
-      <span style="color:#2a7de1">●</span> 得点　<span style="color:#d9443b">●</span> ミス</p>
+    <!-- コートの線は court.js が描く -->
+    <svg id="court" xmlns="http://www.w3.org/2000/svg"></svg>
+    <p class="hint">動画を一時停止して、シャトルが落ちた位置をタップ<br>
+      <span style="color:#2a7de1">●</span> 得点　<span style="color:#d9443b">●</span> 失点</p>
   </section>
 
   <!-- 記録一覧 -->
@@ -62,12 +50,20 @@
   <h3>記録する</h3>
   <div class="dlg-time" id="dlgTime"></div>
   <div class="group">
-    <div class="group-label">ショットの種類</div>
+    <div class="group-label">誰のプレー<small>（拾えなかったときは、拾えなかった人）</small></div>
+    <div class="choices" data-key="player"></div>
+  </div>
+  <div class="group">
+    <div class="group-label">ショットの種類<small>（拾えなかったときは、飛んできた球）</small></div>
     <div class="choices" data-key="shot"></div>
   </div>
   <div class="group">
-    <div class="group-label">結果</div>
-    <div class="choices" data-key="result"></div>
+    <div class="group-label">コース<small>（選ばなくてもいい）</small></div>
+    <div class="choices" data-key="course"></div>
+  </div>
+  <div class="group">
+    <div class="group-label">どうなった</div>
+    <div class="choices" data-key="outcome"></div>
   </div>
   <div class="group" id="missGroup">
     <div class="group-label">ミスの種類</div>
@@ -82,6 +78,7 @@
 
 <!-- 読み込む順番に意味がある：部品を先に、つなぐ main.js を最後に -->
 <script src="js/options.js"></script>
+<script src="js/rules.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/player.js"></script>
 <script src="js/court.js"></script>

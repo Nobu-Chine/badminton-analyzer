@@ -7,11 +7,11 @@ function showStorageWarning() {
 // 記録が変わったら、コートの点と一覧を描き直す
 function refresh() {
   const records = RecordStore.all();
-  Court.drawDots(records);
+  Court.drawDots(records, Rules.score);
   RecordList.render(records);
 }
 
-if (!RecordStore.init()) showStorageWarning();
+if (!RecordStore.init(Rules.upgrade)) showStorageWarning();
 
 Player.init({ isBlocked: () => RecordDialog.isOpen() });
 
@@ -21,12 +21,17 @@ Court.init((x, y) => {
   RecordDialog.open(Player.currentTime(), x, y);
 });
 
-RecordDialog.init((record) => {
-  if (!RecordStore.add(record)) showStorageWarning();
-  refresh();
+RecordDialog.init({
+  missingItems: Rules.missingItems,
+  needsMissType: Rules.needsMissType,
+  onSave(record) {
+    if (!RecordStore.add(record)) showStorageWarning();
+    refresh();
+  },
 });
 
 RecordList.init({
+  scoreOf: Rules.score,
   onSelect(record) {
     if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
     Player.seekAndPlay(record.time);

@@ -30,7 +30,8 @@ main {
 #fileName { margin-left: 8px; font-size: 13px; color: #666; }
 video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; display: none; }
 .placeholder { margin-top: 12px; padding: 40px 12px; text-align: center; color: #888; border: 2px dashed #ccc; border-radius: 8px; }
-#court { width: 100%; max-width: 360px; display: block; margin: 0 auto; touch-action: manipulation; }
+/* 両面コートは縦に長いので、画面の高さに収まるように制限する */
+#court { width: 100%; max-width: 360px; height: 64vh; display: block; margin: 0 auto; touch-action: manipulation; }
 .controls { display: flex; gap: 8px; }
 .controls button {
   flex: 1; padding: 12px 0; border: none; border-radius: 10px;
@@ -60,17 +61,21 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 dialog { border: none; border-radius: 14px; padding: 14px 12px; width: min(96vw, 380px); max-width: 96vw; }
 dialog::backdrop { background: rgba(0,0,0,.4); }
 dialog h3 { margin: 0 0 4px; font-size: 16px; }
-.dlg-time { font-size: 13px; color: #666; margin-bottom: 12px; }
-.group { margin-bottom: 12px; }
-.group-label { font-size: 13px; color: #555; margin-bottom: 6px; }
+.dlg-time { font-size: 13px; color: #666; margin-bottom: 10px; }
+.group { margin-bottom: 10px; }
+.group-label { font-size: 13px; color: #555; margin-bottom: 5px; }
+.group-label small { font-size: 11px; color: #999; margin-left: 4px; }
 .choices { display: flex; flex-wrap: wrap; gap: 6px; }
-.choices .break { flex-basis: 100%; height: 0; }
+/* 改行用。高さ0の行ができて行間が倍になるのを、マイナスの余白で打ち消す */
+.choices .break { flex-basis: 100%; height: 0; margin-top: -6px; }
 .choices button {
   padding: 8px 10px; border: 1px solid #ccc; border-radius: 8px;
   background: #fff; font-size: 14px; cursor: pointer;
 }
 .choices button.selected { background: #1f6f4a; border-color: #1f6f4a; color: #fff; }
-.dlg-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+/* 項目が多くても保存ボタンが常に見えるよう、入力画面の下に固定する */
+.dlg-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;
+  position: sticky; bottom: -14px; background: #fff; padding: 8px 0 14px; }
 .dlg-actions button { padding: 10px 16px; border-radius: 8px; border: none; font-size: 15px; cursor: pointer; }
 #cancelBtn { background: #eee; }
 #saveBtn { background: #1f6f4a; color: #fff; }

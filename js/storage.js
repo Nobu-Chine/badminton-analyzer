@@ -16,8 +16,10 @@ const RecordStore = (() => {
 
   return {
     // 読み込み。保存できる環境かどうかを返す
-    init() {
+    // upgrade：古い形の記録を今の形に変える関数（形のルールは storage では持たない）
+    init(upgrade) {
       try { records = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { records = []; }
+      records = records.map(upgrade);
       return persist();
     },
     all() {

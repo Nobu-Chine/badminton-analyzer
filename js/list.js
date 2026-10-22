@@ -4,8 +4,17 @@ const RecordList = (() => {
   let handlers = null;
 
   // onSelect(record)：記録を押したとき / onDelete(record)：✕を押したとき
-  function init({ onSelect, onDelete }) {
-    handlers = { onSelect, onDelete };
+  // scoreOf(record)：'得点' か '失点' を返す関数
+  function init({ onSelect, onDelete, scoreOf }) {
+    handlers = { onSelect, onDelete, scoreOf };
+  }
+
+  // 例：「相手 スマッシュ（クロス）ネットにかける」
+  function describe(r) {
+    let text = r.player + ' ' + r.shot;
+    if (r.course) text += '（' + r.course + '）';
+    text += r.outcome === 'ミス' ? ' ' + r.missType : ' 決まった';
+    return text;
   }
 
   function render(records) {
@@ -16,12 +25,13 @@ const RecordList = (() => {
     }
     records.forEach((r) => {
       const li = document.createElement('li');
-      const isMiss = r.result === 'ミス';
+      const score = handlers.scoreOf(r);
       li.innerHTML =
         '<span class="time">' + Player.formatTime(r.time) + '</span>' +
-        '<span class="tag ' + (isMiss ? 'miss' : 'point') + '">' + r.result + '</span>' +
-        '<span class="rec-text">' + r.shot + (isMiss ? '（' + r.missType + '）' : '') + '</span>' +
+        '<span class="tag ' + (score === '得点' ? 'point' : 'miss') + '">' + score + '</span>' +
+        '<span class="rec-text"></span>' +
         '<button class="del-btn" title="削除">✕</button>';
+      li.querySelector('.rec-text').textContent = describe(r);
 
       li.onclick = () => handlers.onSelect(r);
       // 削除（一覧の移動処理が動かないように止める）
