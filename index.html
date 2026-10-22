@@ -73,7 +73,8 @@
   .dlg-actions button { padding: 10px 16px; border-radius: 8px; border: none; font-size: 15px; cursor: pointer; }
   #cancelBtn { background: #eee; }
   #saveBtn { background: #1f6f4a; color: #fff; }
-  #saveBtn:disabled { background: #aaa; }
+  #saveBtn.incomplete { background: #aaa; }
+  #dlgError { color: #d9443b; font-size: 13px; margin: 0 0 4px; min-height: 1em; }
 </style>
 </head>
 <body>
@@ -135,9 +136,10 @@
     <div class="group-label">ミスの種類</div>
     <div class="choices" data-key="missType"></div>
   </div>
+  <p id="dlgError"></p>
   <div class="dlg-actions">
     <button id="cancelBtn">やめる</button>
-    <button id="saveBtn" disabled>保存</button>
+    <button id="saveBtn">保存</button>
   </div>
 </dialog>
 
@@ -188,6 +190,7 @@
   const court = document.getElementById('court');
   const dialog = document.getElementById('dialog');
   const saveBtn = document.getElementById('saveBtn');
+  const dlgError = document.getElementById('dlgError');
   const missGroup = document.getElementById('missGroup');
   let draft = null; // 入力中の記録
 
@@ -202,8 +205,11 @@
 
     draft = { time: video.currentTime, x: p.x, y: p.y, shot: null, result: null, missType: null };
     document.getElementById('dlgTime').textContent = '動画の時間：' + formatTime(draft.time);
+    dlgError.textContent = '';
     renderChoices();
     dialog.showModal();
+    // 開いた瞬間に最初のボタン（クリア）へ枠が付き、選択済みに見えるのを防ぐ
+    document.activeElement.blur();
   });
 
   // 選択肢ボタンを描画
@@ -226,13 +232,28 @@
     });
     // ミスの種類は「ミス」のときだけ表示
     missGroup.style.display = draft.result === 'ミス' ? 'block' : 'none';
-    // 必要な項目がそろったら保存ボタンを押せるように
-    const ok = draft.shot && draft.result && (draft.result === '得点' || draft.missType);
-    saveBtn.disabled = !ok;
+    // 項目がそろうまで保存ボタンを灰色に（押すと足りない項目を案内する）
+    const missing = missingItems();
+    saveBtn.classList.toggle('incomplete', missing.length > 0);
+    if (missing.length === 0) dlgError.textContent = '';
+  }
+
+  // まだ選ばれていない項目の名前を返す
+  function missingItems() {
+    const list = [];
+    if (!draft.shot) list.push('ショットの種類');
+    if (!draft.result) list.push('結果');
+    if (draft.result === 'ミス' && !draft.missType) list.push('ミスの種類');
+    return list;
   }
 
   document.getElementById('cancelBtn').onclick = () => dialog.close();
   saveBtn.onclick = () => {
+    const missing = missingItems();
+    if (missing.length > 0) {
+      dlgError.textContent = missing.join('・') + ' を選んでください';
+      return;
+    }
     draft.id = Date.now();
     records.push(draft);
     records.sort((a, b) => a.time - b.time);
