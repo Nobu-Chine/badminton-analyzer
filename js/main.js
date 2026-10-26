@@ -4,16 +4,33 @@ function showStorageWarning() {
   document.getElementById('storageWarn').style.display = 'block';
 }
 
-// 記録が変わったら、コートの点と一覧を描き直す
+// 保存に失敗したら警告を出す
+function saved(ok) {
+  if (!ok) showStorageWarning();
+}
+
+// 記録や試合が変わったら、試合の切り替え・コートの点・一覧を描き直す
 function refresh() {
-  const records = RecordStore.all();
+  const records = Matches.records();
+  MatchPicker.render(Matches.list(), Matches.currentId());
   Court.drawDots(records, Rules.score);
   RecordList.render(records);
 }
 
-if (!RecordStore.init(Rules.upgrade)) showStorageWarning();
+saved(Matches.init(Rules.upgrade));
 
-Player.init({ isBlocked: () => RecordDialog.isOpen() });
+Player.init({
+  isBlocked: () => RecordDialog.isOpen(),
+  onVideoChosen(file) {
+    saved(Matches.openForVideo(file));
+    refresh();
+  },
+});
+
+MatchPicker.init((id) => {
+  saved(Matches.select(id));
+  refresh();
+});
 
 Court.init((x, y) => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
@@ -25,7 +42,7 @@ RecordDialog.init({
   missingItems: Rules.missingItems,
   needsMissType: Rules.needsMissType,
   onSave(record) {
-    if (!RecordStore.add(record)) showStorageWarning();
+    saved(Matches.addRecord(record));
     refresh();
   },
 });
@@ -38,7 +55,7 @@ RecordList.init({
   },
   onDelete(record) {
     if (!confirm('この記録を削除しますか？')) return;
-    if (!RecordStore.remove(record.id)) showStorageWarning();
+    saved(Matches.removeRecord(record.id));
     refresh();
   },
 });

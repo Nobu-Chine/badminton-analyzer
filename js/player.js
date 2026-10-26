@@ -30,7 +30,8 @@ const Player = (() => {
   }
 
   // isBlocked：true を返す間はスペースキーを無効にする（入力画面を開いているときなど）
-  function init({ isBlocked }) {
+  // onVideoChosen(file)：動画ファイルが選ばれたとき
+  function init({ isBlocked, onVideoChosen }) {
     // 選んだ動画をブラウザ内だけで再生（URL.createObjectURL はファイルをアップロードせずに参照する仕組み）
     document.getElementById('fileInput').addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -40,6 +41,7 @@ const Player = (() => {
       video.style.display = 'block';
       document.getElementById('placeholder').style.display = 'none';
       document.getElementById('fileName').textContent = file.name;
+      onVideoChosen(file);
     });
 
     playBtn.onclick = togglePlay;
