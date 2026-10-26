@@ -40,7 +40,7 @@ Court.init((x, y) => {
 
 RecordDialog.init({
   missingItems: Rules.missingItems,
-  needsMissType: Rules.needsMissType,
+  inactiveKeys: Rules.inactiveKeys,
   onSave(record) {
     saved(Matches.addRecord(record));
     refresh();
@@ -49,6 +49,7 @@ RecordDialog.init({
 
 RecordList.init({
   scoreOf: Rules.score,
+  setupByOf: Rules.setupBy,
   onSelect(record) {
     if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
     // 落ちた瞬間ではなく、その少し前から流す（記録した時間そのものは変えない）

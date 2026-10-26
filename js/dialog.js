@@ -1,17 +1,24 @@
 // 記録の入力画面。選択肢は Options（options.js）から作る。
-// どの項目が必須かなどのルールは、init で受け取る関数に任せる。
+// どの項目を使うか・どれが必須かのルールは、init で受け取る関数に任せる。
 const RecordDialog = (() => {
   const dialog = document.getElementById('dialog');
   const saveBtn = document.getElementById('saveBtn');
   const dlgError = document.getElementById('dlgError');
-  const missGroup = document.getElementById('missGroup');
   let draft = null; // 入力中の記録
   let rules = null;
 
+  // 今の入力内容で使わない項目は、値を消す
+  function clearInactive() {
+    rules.inactiveKeys(draft).forEach((key) => { draft[key] = null; });
+  }
+
   // 選択肢ボタンを描画
   function renderChoices() {
+    const inactive = rules.inactiveKeys(draft);
     document.querySelectorAll('.choices').forEach((box) => {
       const key = box.dataset.key;
+      // 使わない項目はまとめて隠す
+      box.closest('.group').style.display = inactive.includes(key) ? 'none' : 'block';
       box.innerHTML = '';
       Options[key].forEach((label) => {
         if (label === null) { box.appendChild(Object.assign(document.createElement('div'), { className: 'break' })); return; }
@@ -21,14 +28,18 @@ const RecordDialog = (() => {
         btn.onclick = () => {
           // 選択中のものをもう一度押すと解除（コースのように選ばなくていい項目のため）
           draft[key] = draft[key] === label ? null : label;
-          if (!rules.needsMissType(draft)) draft.missType = null;
+          clearInactive();
           renderChoices();
+          // 新しく出てきた項目が画面の外なら、見えるところまで動かす
+          const appeared = inactive.find((k) => !rules.inactiveKeys(draft).includes(k));
+          if (appeared) {
+            document.querySelector('.choices[data-key=' + appeared + ']').closest('.group')
+              .scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
         };
         box.appendChild(btn);
       });
     });
-    // ミスの種類は「ミス」のときだけ表示
-    missGroup.style.display = rules.needsMissType(draft) ? 'block' : 'none';
     // 項目がそろうまで保存ボタンを灰色に（押すと足りない項目を案内する）
     const missing = rules.missingItems(draft);
     saveBtn.classList.toggle('incomplete', missing.length > 0);
@@ -36,9 +47,9 @@ const RecordDialog = (() => {
   }
 
   // onSave(record)：保存ボタンで、入力済みの記録を受け取る
-  // missingItems(draft)：足りない項目名の配列を返す / needsMissType(draft)：ミスの種類が必要か
-  function init({ onSave, missingItems, needsMissType }) {
-    rules = { missingItems, needsMissType };
+  // missingItems(draft)：足りない項目名の配列を返す / inactiveKeys(draft)：今は使わない項目の配列を返す
+  function init({ onSave, missingItems, inactiveKeys }) {
+    rules = { missingItems, inactiveKeys };
     document.getElementById('cancelBtn').onclick = () => dialog.close();
     saveBtn.onclick = () => {
       const missing = rules.missingItems(draft);
@@ -52,7 +63,8 @@ const RecordDialog = (() => {
   }
 
   function open(time, x, y) {
-    draft = { time, x, y, player: null, shot: null, course: null, outcome: null, missType: null };
+    draft = { time, x, y, player: null, shot: null, course: null, outcome: null,
+              missType: null, setup: null, setupShot: null };
     document.getElementById('dlgTime').textContent = '動画の時間：' + Player.formatTime(time);
     dlgError.textContent = '';
     renderChoices();

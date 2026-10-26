@@ -5,15 +5,18 @@ const RecordList = (() => {
 
   // onSelect(record)：記録を押したとき / onDelete(record)：✕を押したとき
   // scoreOf(record)：'得点' か '失点' を返す関数
-  function init({ onSelect, onDelete, scoreOf }) {
-    handlers = { onSelect, onDelete, scoreOf };
+  // setupByOf(record)：甘かった前の球を打った人（'自分' か '相手'）を返す関数
+  function init({ onSelect, onDelete, scoreOf, setupByOf }) {
+    handlers = { onSelect, onDelete, scoreOf, setupByOf };
   }
 
   // 例：「相手 スマッシュ（クロス）ネットにかける」
+  //     「相手 プッシュ 決まった ← 自分のピンが甘い」
   function describe(r) {
     let text = r.player + ' ' + r.shot;
     if (r.course) text += '（' + r.course + '）';
     text += r.outcome === 'ミス' ? ' ' + r.missType : ' 決まった';
+    if (r.setupShot) text += ' ← ' + handlers.setupByOf(r) + 'の' + r.setupShot + 'が甘い';
     return text;
   }
 
