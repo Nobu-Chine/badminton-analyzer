@@ -66,6 +66,11 @@ const Matches = (() => {
       return m ? m.records : [];
     },
 
+    // 全試合の記録をまとめたもの（集計用）
+    allRecords() {
+      return data.matches.flatMap((m) => m.records);
+    },
+
     addRecord(record) {
       const m = current();
       if (!m) return save();

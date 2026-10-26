@@ -45,6 +45,18 @@
     <h2>記録一覧（押すとその少し前から再生）</h2>
     <ul id="records"></ul>
   </section>
+
+  <!-- 集計 -->
+  <section class="card list-card">
+    <div class="stats-head">
+      <h2>集計</h2>
+      <select id="statsScope">
+        <option value="match">この試合</option>
+        <option value="all">全試合</option>
+      </select>
+    </div>
+    <div id="stats"></div>
+  </section>
 </main>
 
 <!-- 記録入力ダイアログ -->
@@ -101,6 +113,8 @@
 <script src="js/dialog.js"></script>
 <script src="js/list.js"></script>
 <script src="js/matchPicker.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/statsView.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

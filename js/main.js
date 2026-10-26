@@ -9,12 +9,19 @@ function saved(ok) {
   if (!ok) showStorageWarning();
 }
 
-// 記録や試合が変わったら、試合の切り替え・コートの点・一覧を描き直す
+// 記録や試合が変わったら、試合の切り替え・コートの点・一覧・集計を描き直す
 function refresh() {
   const records = Matches.records();
   MatchPicker.render(Matches.list(), Matches.currentId());
   Court.drawDots(records, Rules.score);
   RecordList.render(records);
+  refreshStats();
+}
+
+// 集計は「この試合」か「全試合」を選べる
+function refreshStats() {
+  const records = StatsView.scope() === 'all' ? Matches.allRecords() : Matches.records();
+  StatsView.render(Stats.summarize(records, { scoreOf: Rules.score, zoneOf: Rules.zone }));
 }
 
 saved(Matches.init(Rules.upgrade));
@@ -26,6 +33,8 @@ Player.init({
     refresh();
   },
 });
+
+StatsView.init(refreshStats);
 
 MatchPicker.init((id) => {
   saved(Matches.select(id));
