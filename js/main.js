@@ -35,6 +35,17 @@ Player.init({
 });
 
 Tabs.init();
+
+Backup.init({
+  getData: () => Matches.exportData(),
+  onLoad(data) {
+    const result = Matches.importData(data, Rules.upgrade);
+    if (!result) { alert('このファイルは読み込めません。書き出した記録のファイルを選んでください'); return; }
+    saved(result.ok);
+    refresh();
+    alert('読み込みました（増えた記録：' + result.added + '件）');
+  },
+});
 StatsView.init(refreshStats);
 
 MatchPicker.init((id) => {

@@ -21,6 +21,11 @@
     <span id="fileName"></span>
     <!-- 試合の切り替え。動画を選ぶと、その動画の試合に自動で切り替わる -->
     <label class="match-row">試合：<select id="matchSelect"></select></label>
+    <!-- 記録のバックアップ（動画は含まない） -->
+    <div class="backup-row">
+      <button id="exportBtn">記録を書き出す</button>
+      <label>記録を読み込む<input type="file" id="importInput" accept=".json,application/json"></label>
+    </div>
     <div class="placeholder" id="placeholder">動画ファイルを選ぶとここで再生されます<br>（動画はサーバーに送られません）</div>
     <video id="video" controls playsinline></video>
   </section>
@@ -121,6 +126,7 @@
 <script src="js/stats.js"></script>
 <script src="js/statsView.js"></script>
 <script src="js/tabs.js"></script>
+<script src="js/backup.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

@@ -35,6 +35,36 @@ const Matches = (() => {
       return ok;
     },
 
+    // 書き出し用：全試合の記録（今見ている試合の情報は含めない）
+    exportData() {
+      return { app: 'badminton-analyzer', version: 1, matches: data.matches };
+    },
+
+    // 読み込んだ記録を、今の記録に足し合わせる（今ある記録は消さない）
+    //   同じ試合（同じ動画）なら記録をまとめ、同じ記録は2つにしない
+    //   新しい試合は追加する
+    // 戻り値：{ ok: 保存できたか, added: 増えた記録の数 }。ファイルの形が違えば null
+    importData(imported, upgrade) {
+      if (!imported || !Array.isArray(imported.matches)) return null;
+      let added = 0;
+      imported.matches.forEach((im) => {
+        if (!im || !Array.isArray(im.records)) return;
+        const records = im.records.map(upgrade);
+        const same = data.matches.find((m) => m.id === im.id || (im.videoKey && m.videoKey === im.videoKey));
+        if (same) {
+          const ids = new Set(same.records.map((r) => r.id));
+          records.filter((r) => !ids.has(r.id)).forEach((r) => { same.records.push(r); added++; });
+          same.records.sort((a, b) => a.time - b.time);
+        } else {
+          data.matches.push({ id: im.id || String(Date.now()), name: im.name || '読み込んだ試合',
+                              videoKey: im.videoKey || null, records });
+          added += records.length;
+        }
+      });
+      if (!data.currentId && data.matches.length > 0) data.currentId = data.matches[0].id;
+      return { ok: save(), added };
+    },
+
     // 選んだ動画の試合に切り替える。初めての動画なら新しい試合を作る
     openForVideo(file) {
       const key = videoKey(file);
