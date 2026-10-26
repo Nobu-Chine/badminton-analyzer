@@ -45,6 +45,13 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 
 /* 記録一覧 */
 .list-card { grid-column: 1 / -1; }
+
+/* タブ */
+.tabs { display: flex; gap: 4px; background: #eef1f0; border-radius: 10px; padding: 4px; margin-bottom: 10px; }
+.tab-btn { flex: 1; padding: 10px 0; border: none; border-radius: 8px; background: none;
+  font-size: 15px; font-weight: bold; color: #666; cursor: pointer; }
+.tab-btn.active { background: #fff; color: #1f6f4a; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+.tab-note { margin: 0 0 4px; font-size: 12px; color: #888; }
 #records { list-style: none; margin: 0; padding: 0; }
 #records li {
   display: flex; align-items: center; gap: 8px;
@@ -57,8 +64,7 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 .tag.miss { background: #d9443b; }
 
 /* 集計 */
-.stats-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.stats-head h2 { margin: 0; }
+.stats-head { display: flex; justify-content: flex-end; margin-bottom: 8px; }
 .stats-head select { padding: 6px 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
 .stats-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
 .stats-tile { background: #f4f5f7; border-radius: 10px; padding: 10px 12px; }

@@ -40,22 +40,27 @@
       <span style="color:#2a7de1">●</span> 得点　<span style="color:#d9443b">●</span> 失点</p>
   </section>
 
-  <!-- 記録一覧 -->
+  <!-- 記録一覧と集計（タブで切り替え） -->
   <section class="card list-card">
-    <h2>記録一覧（押すとその少し前から再生）</h2>
-    <ul id="records"></ul>
-  </section>
-
-  <!-- 集計 -->
-  <section class="card list-card">
-    <div class="stats-head">
-      <h2>集計</h2>
-      <select id="statsScope">
-        <option value="match">この試合</option>
-        <option value="all">全試合</option>
-      </select>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="list">記録一覧</button>
+      <button class="tab-btn" data-tab="stats">集計</button>
     </div>
-    <div id="stats"></div>
+
+    <div class="tab-panel" data-panel="list">
+      <p class="tab-note">押すとその少し前から再生</p>
+      <ul id="records"></ul>
+    </div>
+
+    <div class="tab-panel" data-panel="stats" hidden>
+      <div class="stats-head">
+        <select id="statsScope">
+          <option value="match">この試合</option>
+          <option value="all">全試合</option>
+        </select>
+      </div>
+      <div id="stats"></div>
+    </div>
   </section>
 </main>
 
@@ -115,6 +120,7 @@
 <script src="js/matchPicker.js"></script>
 <script src="js/stats.js"></script>
 <script src="js/statsView.js"></script>
+<script src="js/tabs.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

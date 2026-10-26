@@ -34,6 +34,7 @@ Player.init({
   },
 });
 
+Tabs.init();
 StatsView.init(refreshStats);
 
 MatchPicker.init((id) => {
