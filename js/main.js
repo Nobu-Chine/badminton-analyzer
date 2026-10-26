@@ -51,7 +51,8 @@ RecordList.init({
   scoreOf: Rules.score,
   onSelect(record) {
     if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
-    Player.seekAndPlay(record.time);
+    // 落ちた瞬間ではなく、その少し前から流す（記録した時間そのものは変えない）
+    Player.seekAndPlay(record.time - Settings.replayLeadSeconds);
   },
   onDelete(record) {
     if (!confirm('この記録を削除しますか？')) return;

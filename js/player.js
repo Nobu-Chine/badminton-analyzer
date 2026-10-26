@@ -69,7 +69,7 @@ const Player = (() => {
     isPaused: () => video.paused,
     currentTime: () => video.currentTime,
     seekAndPlay(time) {
-      video.currentTime = time;
+      video.currentTime = Math.max(0, time);
       video.play();
     },
   };
