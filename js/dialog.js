@@ -64,7 +64,7 @@ const RecordDialog = (() => {
 
   function open(time, x, y) {
     draft = { time, x, y, player: null, shot: null, course: null, outcome: null,
-              missType: null, setup: null, setupShot: null };
+              winType: null, missType: null, setup: null, setupShot: null };
     document.getElementById('dlgTime').textContent = '動画の時間：' + Player.formatTime(time);
     dlgError.textContent = '';
     renderChoices();

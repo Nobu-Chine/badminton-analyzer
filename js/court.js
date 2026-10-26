@@ -4,10 +4,10 @@ const Court = (() => {
   const svg = document.getElementById('court');
   const NS = 'http://www.w3.org/2000/svg';
 
-  // シングルスのコート寸法（m）
-  const W = 5.18;      // 幅
-  const HALF = 6.70;   // ネットからバックラインまで
-  const SHORT = 1.98;  // ネットからショートサービスラインまで
+  // シングルスのコート寸法（m）は settings.js から
+  const W = Settings.court.width;
+  const HALF = Settings.court.half;
+  const SHORT = Settings.court.shortLine;
   const MARGIN = 1;    // アウトの位置も押せるように外側の余白
 
   const COLORS = { 得点: '#2a7de1', 失点: '#d9443b' };
