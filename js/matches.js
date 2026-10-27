@@ -146,6 +146,27 @@ const Matches = (() => {
       return data.currentId;
     },
 
+    // 今の試合の動画（撮影順）：[{ key, name }]
+    videos() {
+      const m = current();
+      return m ? m.videos.map((v) => ({ key: v.key, name: v.name })) : [];
+    },
+
+    // 今の試合で、その動画に付いている記録の数
+    recordCountOfVideo(key) {
+      const m = current();
+      return m ? m.records.filter((r) => r.videoKey === key).length : 0;
+    },
+
+    // 今の試合から動画を外す。その動画に付けた記録も一緒に消す（動画ファイル自体には触らない）
+    removeVideo(key) {
+      const m = current();
+      if (!m) return save();
+      m.videos = m.videos.filter((v) => v.key !== key);
+      m.records = m.records.filter((r) => r.videoKey !== key);
+      return save();
+    },
+
     // 今の試合の動画の見分け用 key（撮影順）
     videoKeys() {
       const m = current();

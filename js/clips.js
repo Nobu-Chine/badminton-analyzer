@@ -94,6 +94,8 @@ const Clips = (() => {
     init,
     setOrder,
     show,
+    // 読み込み済みの一覧から外す（試合から外した動画用）
+    forget: (key) => files.delete(key),
     has: (key) => files.has(key),
     currentKey: () => (index < 0 ? null : order[index]),
     // 今の試合の動画のうち、まだ選ばれていない本数

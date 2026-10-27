@@ -23,6 +23,11 @@
     <!-- 試合の切り替え。動画を選ぶと、その動画の試合に自動で切り替わる -->
     <label class="match-row">試合：<select id="matchSelect"></select></label>
     <label class="add-video">＋ この試合に動画を追加<input type="file" id="addVideoInput" accept="video/*" multiple></label>
+    <!-- この試合の動画の一覧（✕で試合から外せる） -->
+    <details class="video-list" id="videoList" hidden>
+      <summary id="videoListSummary"></summary>
+      <ul id="videoListItems"></ul>
+    </details>
     <!-- 記録のバックアップ（動画は含まない） -->
     <div class="backup-row">
       <button id="exportBtn">記録を書き出す</button>
@@ -132,6 +137,7 @@
 <script src="js/dialog.js"></script>
 <script src="js/list.js"></script>
 <script src="js/matchPicker.js"></script>
+<script src="js/videoList.js"></script>
 <script src="js/stats.js"></script>
 <script src="js/statsView.js"></script>
 <script src="js/tabs.js"></script>

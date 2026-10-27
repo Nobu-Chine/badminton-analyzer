@@ -13,6 +13,7 @@ function saved(ok) {
 function refresh() {
   const records = Matches.records();
   MatchPicker.render(Matches.list(), Matches.currentId());
+  refreshVideoList();
   Court.drawDots(records, Rules.score);
   RecordList.render(records);
   refreshStats();
@@ -22,6 +23,11 @@ function refresh() {
 function refreshStats() {
   const records = StatsView.scope() === 'all' ? Matches.allRecords() : Matches.records();
   StatsView.render(Stats.summarize(records, { scoreOf: Rules.score, zoneOf: Rules.zone }));
+}
+
+// この試合の動画の一覧（再生中・選択中・未選択の表示があるので、動画が切り替わったときも描き直す）
+function refreshVideoList() {
+  VideoList.render(Matches.videos(), { isLoaded: Clips.has, currentKey: Clips.currentKey() });
 }
 
 // 今の試合の動画の並びを Clips に渡す（preferKey があればその動画を出す）
@@ -41,11 +47,25 @@ Clips.init({
     refresh();
   },
   onChange(file) {
+    refreshVideoList();
     if (file) { Player.load(file); return; }
     // この試合の動画がまだ選ばれていないときは、選び直しを案内する
     const n = Clips.total();
     Player.clear(n > 0 ? 'この試合の動画（' + n + '本）を選ぶと再生できます<br>（まとめて選べます。順番はばらばらで大丈夫）' : '');
   },
+});
+
+VideoList.init((video) => {
+  // 動画を試合から外す。記録があれば件数も伝える
+  const n = Matches.recordCountOfVideo(video.key);
+  const msg = 'この動画を削除しますか？\n' + video.name +
+    (n > 0 ? '\n\nこの動画の記録（' + n + '件）も削除されます。' : '') +
+    '\n\n※ スマホやPCにある動画ファイル自体は消えません。';
+  if (!confirm(msg)) return;
+  saved(Matches.removeVideo(video.key));
+  Clips.forget(video.key);
+  syncClips(Clips.currentKey()); // 再生中の動画を消したときは、残りの動画に切り替わる
+  refresh();
 });
 
 Tabs.init();
