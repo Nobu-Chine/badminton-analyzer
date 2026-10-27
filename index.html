@@ -14,13 +14,15 @@
 <main>
   <!-- 動画エリア -->
   <section class="card">
+    <!-- 動画は何本でもまとめて選べる。選んだ順番は関係なく、撮影順に並ぶ -->
     <label class="file-btn">
-      動画を選ぶ
-      <input type="file" id="fileInput" accept="video/*">
+      動画を選ぶ（複数可）
+      <input type="file" id="fileInput" accept="video/*" multiple>
     </label>
     <span id="fileName"></span>
     <!-- 試合の切り替え。動画を選ぶと、その動画の試合に自動で切り替わる -->
     <label class="match-row">試合：<select id="matchSelect"></select></label>
+    <label class="add-video">＋ この試合に動画を追加<input type="file" id="addVideoInput" accept="video/*" multiple></label>
     <!-- 記録のバックアップ（動画は含まない） -->
     <div class="backup-row">
       <button id="exportBtn">記録を書き出す</button>
@@ -32,6 +34,12 @@
 
   <!-- コート図エリア（シングルス・両面。上が相手コート、下が自分コート） -->
   <section class="card">
+    <!-- 動画の切り替え（試合の動画が2本以上のときだけ出る） -->
+    <div class="clip-nav" id="clipNav" hidden>
+      <button id="prevClipBtn">◀ 前の動画</button>
+      <span id="clipLabel"></span>
+      <button id="nextClipBtn">次の動画 ▶</button>
+    </div>
     <!-- 再生操作（コートのすぐ上に置いて、指の移動を少なくする） -->
     <div class="controls">
       <button id="backBtn">◀ 5秒</button>
@@ -118,6 +126,7 @@
 <script src="js/rules.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/matches.js"></script>
+<script src="js/clips.js"></script>
 <script src="js/player.js"></script>
 <script src="js/court.js"></script>
 <script src="js/dialog.js"></script>

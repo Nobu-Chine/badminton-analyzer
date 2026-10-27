@@ -1,4 +1,4 @@
-// 動画の読み込みと再生操作
+// 動画の再生と再生操作（どの動画を流すかは Clips から受け取る）
 const Player = (() => {
   const video = document.getElementById('video');
   const playBtn = document.getElementById('playBtn');
@@ -12,7 +12,7 @@ const Player = (() => {
   }
 
   function hasVideo() {
-    return !!video.src;
+    return video.hasAttribute('src');
   }
 
   function togglePlay() {
@@ -29,21 +29,32 @@ const Player = (() => {
     nowTime.textContent = formatTime(video.currentTime) + ' / ' + formatTime(video.duration || 0);
   }
 
-  // isBlocked：true を返す間はスペースキーを無効にする（入力画面を開いているときなど）
-  // onVideoChosen(file)：動画ファイルが選ばれたとき
-  function init({ isBlocked, onVideoChosen }) {
-    // 選んだ動画をブラウザ内だけで再生（URL.createObjectURL はファイルをアップロードせずに参照する仕組み）
-    document.getElementById('fileInput').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      if (video.src) URL.revokeObjectURL(video.src);
-      video.src = URL.createObjectURL(file);
-      video.style.display = 'block';
-      document.getElementById('placeholder').style.display = 'none';
-      document.getElementById('fileName').textContent = file.name;
-      onVideoChosen(file);
-    });
+  const placeholder = document.getElementById('placeholder');
+  const defaultMessage = placeholder.innerHTML;
 
+  // 動画をブラウザ内だけで再生（URL.createObjectURL はファイルをアップロードせずに参照する仕組み）
+  function load(file) {
+    if (video.src) URL.revokeObjectURL(video.src);
+    video.src = URL.createObjectURL(file);
+    video.style.display = 'block';
+    placeholder.style.display = 'none';
+    document.getElementById('fileName').textContent = file.name;
+  }
+
+  // 動画を外して、案内を出す（message がなければ最初の案内）
+  function clear(message) {
+    if (video.src) URL.revokeObjectURL(video.src);
+    video.removeAttribute('src');
+    video.load();
+    video.style.display = 'none';
+    placeholder.innerHTML = message || defaultMessage;
+    placeholder.style.display = 'block';
+    document.getElementById('fileName').textContent = '';
+    showTime();
+  }
+
+  // isBlocked：true を返す間はスペースキーを無効にする（入力画面を開いているときなど）
+  function init({ isBlocked }) {
     playBtn.onclick = togglePlay;
     document.getElementById('backBtn').onclick = () => skip(-5);
     document.getElementById('fwdBtn').onclick = () => skip(5);
@@ -64,13 +75,20 @@ const Player = (() => {
 
   return {
     init,
+    load,
+    clear,
     formatTime,
     hasVideo,
     isPaused: () => video.paused,
     currentTime: () => video.currentTime,
     seekAndPlay(time) {
-      video.currentTime = Math.max(0, time);
-      video.play();
+      const go = () => {
+        video.currentTime = Math.max(0, time);
+        video.play();
+      };
+      // 動画を切り替えた直後は、長さなどの情報が読めてから移動する
+      if (video.readyState >= 1) go();
+      else video.addEventListener('loadedmetadata', go, { once: true });
     },
   };
 })();

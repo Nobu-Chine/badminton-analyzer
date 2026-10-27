@@ -7,8 +7,10 @@ const RecordList = (() => {
   // scoreOf(record)：'得点' か '失点' を返す関数
   // setupByOf(record)：甘かった前の球を打った人（'自分' か '相手'）を返す関数
   // zoneOf(record)：落ちた場所（'ネット前' / '中盤' / 'コート奥'、コート外は null）を返す関数
-  function init({ onSelect, onDelete, scoreOf, setupByOf, zoneOf }) {
-    handlers = { onSelect, onDelete, scoreOf, setupByOf, zoneOf };
+  // videoNumberOf(record)：試合の何本目の動画か（動画が1本の試合では null）
+  // isPlayable(record)：その記録の動画が今読み込まれているか
+  function init({ onSelect, onDelete, scoreOf, setupByOf, zoneOf, videoNumberOf, isPlayable }) {
+    handlers = { onSelect, onDelete, scoreOf, setupByOf, zoneOf, videoNumberOf, isPlayable };
   }
 
   // 例：「自分 クリア（ストレート） バックアウト」
@@ -36,8 +38,12 @@ const RecordList = (() => {
     records.forEach((r) => {
       const li = document.createElement('li');
       const score = handlers.scoreOf(r);
+      const no = handlers.videoNumberOf(r);
+      // 動画が選ばれていない記録は薄く表示する
+      li.classList.toggle('no-video', !handlers.isPlayable(r));
       li.innerHTML =
-        '<span class="time">' + Player.formatTime(r.time) + '</span>' +
+        '<span class="time">' + (no ? '<span class="clip-no">動画' + no + '</span>' : '') +
+          Player.formatTime(r.time) + '</span>' +
         '<span class="tag ' + (score === '得点' ? 'point' : 'miss') + '">' + score + '</span>' +
         '<span class="rec-text"></span>' +
         '<button class="del-btn" title="削除">✕</button>';
