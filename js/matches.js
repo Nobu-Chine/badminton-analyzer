@@ -38,9 +38,21 @@ const Matches = (() => {
       m.records.forEach((r) => { if (r.videoKey === undefined) r.videoKey = m.videoKey || null; });
       delete m.videoKey;
     }
+    // 自動で付けた名前かどうか（古い試合は名前の形から判断する）
+    if (m.autoName === undefined) {
+      m.autoName = m.videos.some((v) => m.name === v.name ||
+        (m.name.startsWith(v.name + ' ほか') && m.name.endsWith('本')));
+    }
     sortVideos(m);
     sortRecords(m);
+    renameIfAuto(m);
     return m;
+  }
+
+  // 自動で付けた名前は、動画が変わるたびに付け直す（例：「a.mp4 ほか2本」）。自分で付けた名前は変えない
+  function renameIfAuto(m) {
+    if (!m.autoName || m.videos.length === 0) return;
+    m.name = m.videos[0].name + (m.videos.length > 1 ? ' ほか' + (m.videos.length - 1) + '本' : '');
   }
 
   // その動画が入っている試合（どこにも入っていなければ null）
@@ -53,6 +65,7 @@ const Matches = (() => {
     videos.filter((v) => !matchOfVideo(v.key)).forEach((v) => m.videos.push(v));
     sortVideos(m);
     sortRecords(m);
+    renameIfAuto(m);
   }
 
   return {
@@ -96,7 +109,7 @@ const Matches = (() => {
           sortRecords(same);
         } else {
           data.matches.push({ id: im.id || String(Date.now()), name: im.name || '読み込んだ試合',
-                              videos: im.videos, records: im.records });
+                              autoName: im.autoName, videos: im.videos, records: im.records });
           added += im.records.length;
         }
       });
@@ -116,8 +129,7 @@ const Matches = (() => {
       });
       let match = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([m]) => m)[0];
       if (!match) {
-        const name = videos[0].name + (videos.length > 1 ? ' ほか' + (videos.length - 1) + '本' : '');
-        match = { id: String(Date.now()), name, videos: [], records: [] };
+        match = { id: String(Date.now()), name: '', autoName: true, videos: [], records: [] };
         data.matches.push(match);
       }
       addNewVideos(match, videos);
@@ -159,11 +171,18 @@ const Matches = (() => {
     },
 
     // 今の試合から動画を外す。その動画に付けた記録も一緒に消す（動画ファイル自体には触らない）
+    // 動画も記録もなくなった試合は、試合ごと消して、残っている試合に切り替える
     removeVideo(key) {
       const m = current();
       if (!m) return save();
       m.videos = m.videos.filter((v) => v.key !== key);
       m.records = m.records.filter((r) => r.videoKey !== key);
+      if (m.videos.length === 0 && m.records.length === 0) {
+        data.matches = data.matches.filter((x) => x !== m);
+        data.currentId = data.matches.length > 0 ? data.matches[0].id : null;
+      } else {
+        renameIfAuto(m);
+      }
       return save();
     },
 
