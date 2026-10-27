@@ -27,7 +27,7 @@ function refreshStats() {
 
 // この試合の動画の一覧（再生中・選択中・未選択の表示があるので、動画が切り替わったときも描き直す）
 function refreshVideoList() {
-  VideoList.render(Matches.videos(), { isLoaded: Clips.has, currentKey: Clips.currentKey() });
+  VideoList.render(Matches.videos(), { isLoaded: Clips.has, currentKey: Clips.currentKey(), hasMatch: !!Matches.currentId() });
 }
 
 // 今の試合の動画の並びを Clips に渡す（preferKey があればその動画を出す）
@@ -42,9 +42,22 @@ Player.init({ isBlocked: () => RecordDialog.isOpen() });
 Clips.init({
   // 動画が選ばれたら、その動画の試合に切り替える（'add' のときは今の試合に足す）
   onFilesChosen(videos, mode) {
-    saved(mode === 'add' ? Matches.addVideos(videos) : Matches.openForVideos(videos));
-    syncClips(videos[0].key);
+    if (mode === 'open') {
+      saved(Matches.openForVideos(videos));
+      syncClips(videos[0].key);
+      refresh();
+      return;
+    }
+    // 「この試合に動画を追加」：別の試合に入っている動画は足さず、理由を伝える
+    const result = Matches.addVideos(videos);
+    saved(result.ok);
+    syncClips(result.added.length > 0 ? result.added[0].key : Clips.currentKey());
     refresh();
+    if (result.skipped.length > 0) {
+      alert('次の動画は別の試合に入っているので、追加しませんでした。\n\n' +
+        result.skipped.map((s) => '・' + s.name + '（試合：' + s.matchName + '）').join('\n') +
+        '\n\nこの試合に移したいときは、先に元の試合の「この試合の動画」から削除してください。');
+    }
   },
   onChange(file) {
     refreshVideoList();

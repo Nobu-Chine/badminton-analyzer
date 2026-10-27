@@ -31,6 +31,7 @@ main {
 .match-row { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 14px; color: #555; }
 .add-video { display: inline-block; margin-top: 8px; font-size: 13px; color: #1f6f4a; cursor: pointer; }
 .add-video input { display: none; }
+.add-video[hidden] { display: none; }
 /* この試合の動画の一覧 */
 .video-list { margin-top: 8px; font-size: 13px; }
 .video-list[hidden] { display: none; }

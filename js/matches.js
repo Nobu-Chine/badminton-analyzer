@@ -141,11 +141,18 @@ const Matches = (() => {
     },
 
     // 今の試合に動画を足す（試合がなければ新しく作る）
+    // 戻り値：{ ok: 保存できたか, added: 足した動画, skipped: 別の試合に入っていて足さなかった動画 }
+    //   skipped は [{ name: 動画の名前, matchName: 入っている試合の名前 }]
     addVideos(videos) {
       const m = current();
-      if (!m) return this.openForVideos(videos);
-      addNewVideos(m, videos);
-      return save();
+      if (!m) return { ok: this.openForVideos(videos), added: videos, skipped: [] };
+      const added = videos.filter((v) => !matchOfVideo(v.key));
+      const skipped = videos
+        .map((v) => ({ v, owner: matchOfVideo(v.key) }))
+        .filter(({ owner }) => owner && owner !== m)
+        .map(({ v, owner }) => ({ name: v.name, matchName: owner.name }));
+      addNewVideos(m, added);
+      return { ok: save(), added, skipped };
     },
 
     select(id) {
