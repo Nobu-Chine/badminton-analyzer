@@ -29,6 +29,23 @@ main {
 .file-btn input { display: none; }
 #fileName { margin-left: 8px; font-size: 13px; color: #666; }
 .match-row { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 14px; color: #555; }
+.add-video { display: inline-block; margin-top: 8px; font-size: 13px; color: #1f6f4a; cursor: pointer; }
+.add-video input { display: none; }
+.add-video[hidden] { display: none; }
+/* この試合の動画の一覧 */
+.video-list { margin-top: 8px; font-size: 13px; }
+.video-list[hidden] { display: none; }
+.video-list summary { cursor: pointer; color: #555; padding: 4px 0; }
+.video-list ul { list-style: none; margin: 4px 0 0; padding: 0; }
+.video-list li { display: flex; align-items: center; gap: 8px; padding: 2px 0 2px 4px; border-bottom: 1px solid #eee; }
+.video-no { color: #888; min-width: 3.5em; }
+.video-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.video-status { font-size: 11px; color: #1f6f4a; }
+.video-status.off { color: #aaa; }
+/* スマホでも押しやすいよう、×は 44px 四方 */
+.video-del { width: 44px; height: 44px; flex-shrink: 0; border: none; border-radius: 8px;
+  background: none; color: #999; font-size: 18px; cursor: pointer; }
+.video-del:active { background: #fbeaea; color: #d9443b; }
 .backup-row { display: flex; gap: 8px; margin-top: 8px; }
 .backup-row button, .backup-row label { flex: 1; padding: 8px 0; text-align: center; font-size: 13px;
   border: 1px solid #ccc; border-radius: 8px; background: #fff; color: #333; cursor: pointer; }
@@ -38,6 +55,13 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 .placeholder { margin-top: 12px; padding: 40px 12px; text-align: center; color: #888; border: 2px dashed #ccc; border-radius: 8px; }
 /* 両面コートは縦に長いので、画面の高さに収まるように制限する */
 #court { width: 100%; max-width: 360px; height: 64vh; display: block; margin: 0 auto; touch-action: manipulation; }
+/* 動画の切り替え */
+.clip-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.clip-nav[hidden] { display: none; }
+.clip-nav button { flex: 1; padding: 10px 0; border: 1px solid #c9d8cf; border-radius: 10px;
+  background: #fff; color: #1f6f4a; font-size: 14px; font-weight: bold; cursor: pointer; }
+.clip-nav button:disabled { color: #bbb; border-color: #e3e3e3; cursor: default; }
+.clip-nav span { min-width: 6.5em; text-align: center; font-size: 13px; color: #555; font-variant-numeric: tabular-nums; }
 .controls { display: flex; gap: 8px; }
 .controls button {
   flex: 1; padding: 12px 0; border: none; border-radius: 10px;
@@ -62,6 +86,8 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
   padding: 10px 4px; border-bottom: 1px solid #eee; cursor: pointer;
 }
 #records li:hover { background: #f7faf8; }
+.clip-no { display: block; font-size: 11px; font-weight: normal; color: #888; }
+#records li.no-video { opacity: .55; }
 .time { font-variant-numeric: tabular-nums; font-weight: bold; min-width: 52px; }
 .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; color: #fff; }
 .tag.point { background: #2a7de1; }
