@@ -80,6 +80,9 @@ const Matches = (() => {
         if (!data.currentId) data.currentId = 'legacy';
       }
       data.matches.forEach((m) => normalize(m, upgrade));
+      // 動画も記録もない試合は片付ける（前の版で動画を全部消したときの残り）
+      data.matches = data.matches.filter((m) => m.videos.length > 0 || m.records.length > 0);
+      if (!current()) data.currentId = data.matches.length > 0 ? data.matches[0].id : null;
       const ok = save();
       if (ok) Store.remove(OLD_KEY);
       return ok;
