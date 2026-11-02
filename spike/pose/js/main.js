@@ -65,7 +65,7 @@ const calibration = createCalibration(canvas, video, {
   onPoint: redrawOverlay,
   onDone(points) {
     H = buildHomography(points, meSide.value === 'right');
-    calibStatus.textContent = H ? '設定できました。手前のコートの中にいる人が緑の点になります'
+    calibStatus.textContent = H ? '設定できました。このコートの中にいる人が緑の点になります'
                                 : '四隅が読み取れませんでした。もう一度タップしてください';
     tracker.reset();
     redrawOverlay();
@@ -161,7 +161,7 @@ function render() {
     '<p class="perf">1コマの処理：' + avgCost.toFixed(0) + ' ms' +
     (avgCost ? '（1秒に約 ' + Math.min(1000 / INTERVAL_MS, 1000 / avgCost).toFixed(1) + ' コマ）' : '') +
     '<br>解析したコマ数：' + s.frames +
-    '<br>見つかった人（平均）：' + s.avgDetected.toFixed(1) + '人、うち手前のコート内：' + s.avgInCourt.toFixed(1) + '人</p>' +
+    '<br>見つかった人（平均）：' + s.avgDetected.toFixed(1) + '人、うち対象のコート内：' + s.avgInCourt.toFixed(1) + '人</p>' +
     '<table><tr><th></th><th>移動</th>' + zones.map((z) => '<th>' + z + '</th>').join('') + '<th>見つけた割合</th></tr>' +
     row('自分') + row('相手') + '</table>';
 }
