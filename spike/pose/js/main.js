@@ -137,6 +137,13 @@ video.addEventListener('pause', () => {
 });
 document.getElementById('resetBtn').onclick = () => { tracker.reset(); costs = []; lastFeet = []; render(); redrawOverlay(); };
 
+// 試作ページは結果を保存しないので、解析したあとにページを離れようとしたら確認を出す
+window.addEventListener('beforeunload', (e) => {
+  if (tracker.summary().frames === 0) return;
+  e.preventDefault();
+  e.returnValue = ''; // ブラウザが「このページを離れますか？」と確認を出す
+});
+
 // ===== 結果の表示 =====
 function render() {
   const players = tracker.trails();

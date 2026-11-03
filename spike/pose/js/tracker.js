@@ -4,7 +4,12 @@
 // 画面には触らない（計算だけ）。
 
 const OUTSIDE = 1.5;       // コートの線から外に何mまでを「コート内の人」とみなすか（アウト際の動きも拾う）
-const MAX_STEP = 3;        // 1回の更新で、これ以上動いたら見間違いとして無視する（m）
+// 見間違いの判定：前回から「経過時間 × MAX_SPEED ＋ MAX_STEP」より遠くに見つかったら無視する
+//   （隠れていた・処理が遅くてコマを飛ばした、のように時間が空いたときは、そのぶん遠くても受け入れる）
+const MAX_SPEED = 8;       // 人が動ける速さの上限（m/秒）
+const MAX_STEP = 1;        // 足元の見つけ方のぶれの分（m）
+const RECOVER = 3;         // 続けてこの回数「遠すぎる」になったら、そちらを本当の位置とみなして追いつく
+const JUMP_SEC = 2;        // 前回からこれ以上時間が空いたら（動画を飛ばしたなど）、そこから数え直す
 const SMOOTH = 0.5;        // 位置のぶれをならす強さ（0〜1、小さいほどなめらか）
 
 export function createTracker(zoneOf) {
@@ -17,8 +22,8 @@ export function createTracker(zoneOf) {
 
   function reset() {
     players = {
-      自分: { pos: null, trail: [], distance: 0, zones: {}, seen: 0 },
-      相手: { pos: null, trail: [], distance: 0, zones: {}, seen: 0 },
+      自分: { pos: null, lastTime: 0, rejects: 0, trail: [], distance: 0, zones: {}, seen: 0 },
+      相手: { pos: null, lastTime: 0, rejects: 0, trail: [], distance: 0, zones: {}, seen: 0 },
     };
     frames = 0;
     detectedTotal = 0;
@@ -46,13 +51,26 @@ export function createTracker(zoneOf) {
         Math.hypot(a[0] - cx, a[1] - cy) - Math.hypot(b[0] - cx, b[1] - cy))[0];
       const p = players[name];
       const prev = p.pos;
-      const next = prev ? { x: prev.x + (x - prev.x) * SMOOTH, y: prev.y + (y - prev.y) * SMOOTH } : { x, y };
-      if (prev) {
-        const step = Math.hypot(next.x - prev.x, next.y - prev.y);
-        if (step > MAX_STEP) return;
-        p.distance += step;
+      const dt = timeSec - p.lastTime;
+      let next;
+      if (!prev || dt < 0 || dt > JUMP_SEC) {
+        // 最初の1回、または動画を飛ばしたとき：そこから数え直す（移動距離には足さない）
+        next = { x, y };
+        p.rejects = 0;
+      } else if (Math.hypot(x - prev.x, y - prev.y) > MAX_SPEED * dt + MAX_STEP) {
+        // 経過時間のわりに遠すぎる：見間違いとして無視する
+        // ただし続けて何回も遠くに見つかるなら、そちらが本当の位置なので追いつく（距離には足さない）
+        p.rejects++;
+        if (p.rejects < RECOVER) return;
+        next = { x, y };
+        p.rejects = 0;
+      } else {
+        next = { x: prev.x + (x - prev.x) * SMOOTH, y: prev.y + (y - prev.y) * SMOOTH };
+        p.distance += Math.hypot(next.x - prev.x, next.y - prev.y);
+        p.rejects = 0;
       }
       p.pos = next;
+      p.lastTime = timeSec;
       p.seen++;
       p.trail.push({ x: next.x, y: next.y, t: timeSec });
       const zone = zoneOf(next) || 'コート外';
