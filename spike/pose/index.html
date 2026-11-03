@@ -26,9 +26,11 @@
 
   <section class="card">
     <h2>2. コートの四隅をタップ</h2>
-    <p class="note">いちばん外側の線（ダブルスのサイドラインとバックライン）の角を、案内の順にタップしてください。</p>
+    <p class="note">いちばん外側の線（ダブルスのサイドラインとバックライン）の角を、案内の順にタップしてください。
+      画面に入っていない角は「この角は見えない」を押して、代わりに別の線の交点を使えます。</p>
     <div class="row">
       <button class="btn" id="calibBtn">四隅をタップする</button>
+      <button class="btn" id="hiddenBtn" hidden>この角は見えない</button>
       <label class="select">自分は
         <select id="meSide">
           <option value="right">画面の右側</option>
@@ -36,6 +38,8 @@
         </select>
       </label>
     </div>
+    <!-- 代わりの点を選ぶコート図（動画と同じ向き） -->
+    <svg id="pointPicker" xmlns="http://www.w3.org/2000/svg" hidden></svg>
     <p class="status" id="calibStatus">まだ設定していません</p>
   </section>
 

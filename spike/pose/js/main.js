@@ -1,6 +1,8 @@
 // 試作ページの部品をつなぐだけのファイル。
 import { applyHomography } from './homography.js';
-import { CORNER_LABELS, buildHomography, createCalibration } from './calibration.js';
+import { buildHomography, createCalibration } from './calibration.js';
+import { courtGeometry, pointName } from './courtPoints.js';
+import { createPointPicker } from './pointPicker.js';
 import { loadDetector, detectFeet } from './detector.js';
 import { createTracker } from './tracker.js';
 import { createOverlay } from './overlay.js';
@@ -11,6 +13,7 @@ const seek = document.getElementById('seek');
 const runBtn = document.getElementById('runBtn');
 const runStatus = document.getElementById('runStatus');
 const calibStatus = document.getElementById('calibStatus');
+const hiddenBtn = document.getElementById('hiddenBtn');
 const meSide = document.getElementById('meSide');
 const modelSelect = document.getElementById('model');
 
@@ -20,6 +23,7 @@ const TRAIL = 150;        // コート図に出す、最近の点の数（1人�
 const overlay = createOverlay(canvas, video);
 const tracker = createTracker(Rules.zone);
 let H = null;             // 映像 → コートの変換の式
+let Hinv = null;          // コート → 映像の変換の式（動画の上にコートの線を描く用）
 let lastFeet = [];        // 直近のコマで見つかった足元（表示用）
 let lastRun = 0;
 let lastStamp = 0;
@@ -33,11 +37,11 @@ function fmt(sec) {
 }
 
 function redrawOverlay() {
-  overlay.draw({
-    corners: calibration.points(),
-    feet: lastFeet,
-    nextLabel: calibration.isActive() ? CORNER_LABELS[calibration.points().length] : null,
-  });
+  const st = calibration.state();
+  // 設定ができたら、その設定でコートの線を動画の上に描く（実際の線と重なれば合っている）
+  // コートの線は「自分は左／右」で入れ替えても同じ形なので、そのまま変換できる
+  const lines = Hinv ? courtGeometry().segments.map(([a, b]) => [applyHomography(Hinv, a), applyHomography(Hinv, b)]) : [];
+  overlay.draw({ points: st.imagePoints, lines, feet: lastFeet, nextLabel: st.nextLabel });
 }
 
 // ===== 1. 動画 =====
@@ -61,27 +65,52 @@ video.addEventListener('timeupdate', () => {
 seek.addEventListener('input', () => { video.currentTime = Number(seek.value); });
 
 // ===== 2. 四隅のタップ =====
+// 4点から変換の式を作る
+function applyCalibration() {
+  const result = buildHomography(calibration.pairs(), meSide.value === 'right');
+  H = result.H || null;
+  Hinv = result.Hinv || null;
+  calibStatus.textContent = H
+    ? '設定できました。動画の上の黄色い線が、実際のコートの線と重なっていればOK。このコートの中にいる人が緑の点になります'
+    : result.error;
+  tracker.reset();
+  render();
+  redrawOverlay();
+}
+
 const calibration = createCalibration(canvas, video, {
-  onPoint: redrawOverlay,
-  onDone(points) {
-    H = buildHomography(points, meSide.value === 'right');
-    calibStatus.textContent = H ? '設定できました。このコートの中にいる人が緑の点になります'
-                                : '四隅が読み取れませんでした。もう一度タップしてください';
-    tracker.reset();
+  onChange() {
+    const st = calibration.state();
+    hiddenBtn.hidden = !st.active || st.picking || !!st.substitute;
+    if (!st.picking && !st.substitute) picker.hide();
+    if (st.active) {
+      calibStatus.textContent = st.picking
+        ? '下のコート図で、動画に映っている線の交点を選んでください（隠れている角に近い点ほど正確です）'
+        : st.substitute
+          ? '選んだ点：' + pointName(st.substitute) + '。動画の上で、この点をタップしてください（違っていたら、コート図をもう一度タップして選び直せます）'
+          : '動画の上で、コートの「' + st.nextLabel + '」をタップしてください（見えなければ「この角は見えない」）';
+    }
     redrawOverlay();
   },
+  onDone: applyCalibration,
 });
+
+const picker = createPointPicker(document.getElementById('pointPicker'), (p) => calibration.pick(p));
+
 document.getElementById('calibBtn').onclick = () => {
   if (!video.src) { alert('先に動画を選んでください'); return; }
   video.pause();
   H = null;
-  calibStatus.textContent = 'コートの角を、案内の順に4か所タップしてください';
+  Hinv = null;
   calibration.start();
 };
+hiddenBtn.onclick = () => {
+  picker.show(calibration.state().usedCourt);
+  calibration.markHidden();
+};
 meSide.addEventListener('change', () => {
-  if (calibration.points().length === 4) H = buildHomography(calibration.points(), meSide.value === 'right');
-  tracker.reset();
-  render();
+  if (calibration.pairs().length === 4) applyCalibration();
+  else { tracker.reset(); render(); }
 });
 
 // ===== 3. 解析しながら再生 =====

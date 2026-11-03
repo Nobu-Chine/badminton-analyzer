@@ -1,4 +1,4 @@
-// 動画の上に重ねた canvas に、タップした四隅と、見つかった足元を描く（表示だけ）。
+// 動画の上に重ねた canvas に、タップした点・コートの線・見つかった足元を描く（表示だけ）。
 export function createOverlay(canvas, video) {
   const ctx = canvas.getContext('2d');
 
@@ -9,21 +9,29 @@ export function createOverlay(canvas, video) {
     canvas.height = video.videoHeight;
   }
 
-  // corners：タップした点 [[x, y], ...]、feet：[{ x, y, inCourt }]、labels：次にタップする場所の名前
-  function draw({ corners = [], feet = [], nextLabel = null }) {
+  // points：タップした点 [[x, y], ...]
+  // lines：設定から求めたコートの線 [[[x1, y1], [x2, y2]], ...]（動画のピクセル）
+  // feet：[{ x, y, inCourt }]、nextLabel：次にタップする場所の名前
+  function draw({ points = [], lines = [], feet = [], nextLabel = null }) {
     fit();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const r = Math.max(4, canvas.width / 200);
 
-    // 四隅と、それを結んだ線
-    ctx.lineWidth = r / 2;
-    ctx.strokeStyle = '#ffd400';
-    ctx.fillStyle = '#ffd400';
-    ctx.beginPath();
-    corners.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
-    if (corners.length === 4) ctx.closePath();
-    ctx.stroke();
-    corners.forEach(([x, y]) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); });
+    // コートの線（実際の線と重なっていれば、設定が合っている）
+    ctx.lineWidth = Math.max(2, r / 2.5);
+    ctx.strokeStyle = 'rgba(255, 212, 0, .85)';
+    lines.forEach(([[x1, y1], [x2, y2]]) => {
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    });
+
+    // タップした点（番号付き）
+    ctx.font = 'bold ' + r * 2.4 + 'px sans-serif';
+    points.forEach(([x, y], i) => {
+      ctx.fillStyle = '#ffd400';
+      ctx.beginPath(); ctx.arc(x, y, r * 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.fillText(String(i + 1), x + r * 1.6, y - r * 1.2);
+    });
 
     // 足元：コート内の人は緑、外の人（除外した人）は灰色
     feet.forEach(({ x, y, inCourt }) => {
@@ -38,7 +46,7 @@ export function createOverlay(canvas, video) {
       ctx.fillStyle = 'rgba(0,0,0,.6)';
       ctx.fillRect(0, 0, canvas.width, size * 1.8);
       ctx.fillStyle = '#fff';
-      ctx.fillText('コートの「' + nextLabel + '」の角をタップ', size * 0.6, size * 1.25);
+      ctx.fillText('コートの「' + nextLabel + '」をタップ', size * 0.6, size * 1.25);
     }
   }
 
