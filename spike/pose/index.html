@@ -9,7 +9,7 @@
 <body>
 <header>
   <h1>🧪 動き解析の試作（お試し調査）</h1>
-  <p>四隅をタップしたコートのシングルスの2人の足元をAIで見つけて、コート図に打ちます（手前・奥どちらのコートでも可）。動画はどこにも送りません。</p>
+  <p>四隅をタップしたコートのシングルスの2人をAI（物体検出）で見つけて、足元の位置を、コート図に打ちます（手前・奥どちらのコートでも可）。動画はどこにも送りません。</p>
 </header>
 
 <main>
@@ -48,8 +48,8 @@
     <div class="row">
       <label class="select">AI
         <select id="model">
-          <option value="lite">軽い（速い）</option>
-          <option value="full">精度が高い（重い）</option>
+          <option value="lite">軽い（速い・人を見つける AI：lite0）</option>
+          <option value="full">精度が高い（重い・lite2）</option>
         </select>
       </label>
       <button class="btn primary" id="runBtn">▶ 解析しながら再生</button>

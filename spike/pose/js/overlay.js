@@ -12,10 +12,21 @@ export function createOverlay(canvas, video) {
   // points：タップした点 [[x, y], ...]
   // lines：設定から求めたコートの線 [[[x1, y1], [x2, y2]], ...]（動画のピクセル）
   // feet：[{ x, y, inCourt }]、nextLabel：次にタップする場所の名前
-  function draw({ points = [], lines = [], feet = [], nextLabel = null }) {
+  // box：解析する範囲 { x, y, w, h }（点線で囲む）
+  function draw({ points = [], lines = [], box = null, feet = [], nextLabel = null }) {
     fit();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const r = Math.max(4, canvas.width / 200);
+
+    // 解析する範囲（この外の人は見ない）
+    if (box) {
+      ctx.save();
+      ctx.setLineDash([r * 2, r * 1.5]);
+      ctx.lineWidth = Math.max(2, r / 3);
+      ctx.strokeStyle = 'rgba(255, 255, 255, .7)';
+      ctx.strokeRect(box.x, box.y, box.w, box.h);
+      ctx.restore();
+    }
 
     // コートの線（実際の線と重なっていれば、設定が合っている）
     ctx.lineWidth = Math.max(2, r / 2.5);

@@ -1,9 +1,9 @@
 // 試作ページの部品をつなぐだけのファイル。
 import { applyHomography } from './homography.js';
-import { buildHomography, createCalibration } from './calibration.js';
+import { buildHomography, createCalibration, courtBoxInImage } from './calibration.js';
 import { courtGeometry, pointName } from './courtPoints.js';
 import { createPointPicker } from './pointPicker.js';
-import { loadDetector, detectFeet } from './detector.js';
+import { loadDetector, detectFeet, lastTileCount } from './detector.js';
 import { createTracker } from './tracker.js';
 import { createOverlay } from './overlay.js';
 
@@ -24,6 +24,7 @@ const overlay = createOverlay(canvas, video);
 const tracker = createTracker(Rules.zone);
 let H = null;             // 映像 → コートの変換の式
 let Hinv = null;          // コート → 映像の変換の式（動画の上にコートの線を描く用）
+let box = null;           // 解析する映像の範囲（対象のコートのまわりだけ）
 let lastFeet = [];        // 直近のコマで見つかった足元（表示用）
 let lastRun = 0;
 let lastStamp = 0;
@@ -41,7 +42,7 @@ function redrawOverlay() {
   // 設定ができたら、その設定でコートの線を動画の上に描く（実際の線と重なれば合っている）
   // コートの線は「自分は左／右」で入れ替えても同じ形なので、そのまま変換できる
   const lines = Hinv ? courtGeometry().segments.map(([a, b]) => [applyHomography(Hinv, a), applyHomography(Hinv, b)]) : [];
-  overlay.draw({ points: st.imagePoints, lines, feet: lastFeet, nextLabel: st.nextLabel });
+  overlay.draw({ points: st.imagePoints, lines, box, feet: lastFeet, nextLabel: st.nextLabel });
 }
 
 // ===== 1. 動画 =====
@@ -70,6 +71,7 @@ function applyCalibration() {
   const result = buildHomography(calibration.pairs(), meSide.value === 'right');
   H = result.H || null;
   Hinv = result.Hinv || null;
+  box = Hinv ? courtBoxInImage(Hinv, tracker.area(), video.videoWidth, video.videoHeight) : null;
   calibStatus.textContent = H
     ? '設定できました。動画の上の黄色い線が、実際のコートの線と重なっていればOK。このコートの中にいる人が緑の点になります'
     : result.error;
@@ -102,6 +104,7 @@ document.getElementById('calibBtn').onclick = () => {
   video.pause();
   H = null;
   Hinv = null;
+  box = null;
   calibration.start();
 };
 hiddenBtn.onclick = () => {
@@ -120,10 +123,10 @@ function analyze() {
   if (now - lastRun < INTERVAL_MS) return;
   lastRun = now;
   const stamp = Math.max(Math.round(now), lastStamp + 1); // MediaPipe には、毎回大きくなる時刻を渡す
-  lastStamp = stamp;
+  lastStamp = stamp + 100; // タイルごとに時刻を 1 ずつ使うので、次のコマはそれより後にする
 
   const t0 = performance.now();
-  const feetImg = detectFeet(video, stamp);
+  const feetImg = detectFeet(video, stamp, box);
   costs.push(performance.now() - t0);
   if (costs.length > 50) costs.shift();
 
@@ -194,7 +197,7 @@ function render() {
       '<td>' + found + '%</td></tr>';
   };
   document.getElementById('stats').innerHTML =
-    '<p class="perf">1コマの処理：' + avgCost.toFixed(0) + ' ms' +
+    '<p class="perf">1コマの処理：' + avgCost.toFixed(0) + ' ms（タイル ' + lastTileCount() + ' 枚）' +
     (avgCost ? '（1秒に約 ' + Math.min(1000 / INTERVAL_MS, 1000 / avgCost).toFixed(1) + ' コマ）' : '') +
     '<br>解析したコマ数：' + s.frames +
     '<br>見つかった人（平均）：' + s.avgDetected.toFixed(1) + '人、うち対象のコート内：' + s.avgInCourt.toFixed(1) + '人</p>' +

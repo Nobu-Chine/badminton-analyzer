@@ -3,7 +3,12 @@
 //   ネットのどちら側にいるかで「自分（y>0）／相手（y<0）」を決める
 // 画面には触らない（計算だけ）。
 
-const OUTSIDE = 1.5;       // コートの線から外に何mまでを「コート内の人」とみなすか（アウト際の動きも拾う）
+// コートの線から外に何mまでを「コート内の人」とみなすか
+//   横：体育館ではコートが隣り合っているので、隣のコートの人やコーチを拾わないよう狭くする
+//      （シングルスのサイドラインから。ダブルスのサイドラインの 0.3m 外まで）
+//   後ろ：選手はバックラインの後ろまで下がるので、広めにとる
+const SIDE_OUT = 0.46 + 0.3;
+const BACK_OUT = 2.0;
 // 見間違いの判定：前回から「経過時間 × MAX_SPEED ＋ MAX_STEP」より遠くに見つかったら無視する
 //   （隠れていた・処理が遅くてコマを飛ばした、のように時間が空いたときは、そのぶん遠くても受け入れる）
 const MAX_SPEED = 8;       // 人が動ける速さの上限（m/秒）
@@ -32,7 +37,7 @@ export function createTracker(zoneOf) {
   reset();
 
   function inCourt([x, y]) {
-    return x >= -OUTSIDE && x <= W + OUTSIDE && Math.abs(y) <= HALF + OUTSIDE;
+    return x >= -SIDE_OUT && x <= W + SIDE_OUT && Math.abs(y) <= HALF + BACK_OUT;
   }
 
   // 1コマ分を受け取る。feet はコート上の位置 [[x, y], ...]
@@ -95,5 +100,8 @@ export function createTracker(zoneOf) {
     };
   }
 
-  return { update, summary, reset, trails: () => players, inCourt };
+  // 「コート内の人」とみなす範囲（コート上の位置、m）。解析する映像の範囲を決めるのに使う
+  const area = { minX: -SIDE_OUT, maxX: W + SIDE_OUT, minY: -HALF - BACK_OUT, maxY: HALF + BACK_OUT };
+
+  return { update, summary, reset, trails: () => players, inCourt, area: () => area };
 }
