@@ -14,6 +14,7 @@ const runBtn = document.getElementById('runBtn');
 const runStatus = document.getElementById('runStatus');
 const calibStatus = document.getElementById('calibStatus');
 const hiddenBtn = document.getElementById('hiddenBtn');
+const undoBtn = document.getElementById('undoBtn');
 const meSide = document.getElementById('meSide');
 const modelSelect = document.getElementById('model');
 
@@ -42,7 +43,7 @@ function redrawOverlay() {
   // 設定ができたら、その設定でコートの線を動画の上に描く（実際の線と重なれば合っている）
   // コートの線は「自分は左／右」で入れ替えても同じ形なので、そのまま変換できる
   const lines = Hinv ? courtGeometry().segments.map(([a, b]) => [applyHomography(Hinv, a), applyHomography(Hinv, b)]) : [];
-  overlay.draw({ points: st.imagePoints, lines, box, feet: lastFeet, nextLabel: st.nextLabel });
+  overlay.draw({ points: st.imagePoints, lines, box, feet: lastFeet, nextLabel: st.nextLabel, loupe: st.loupe });
 }
 
 // ===== 1. 動画 =====
@@ -66,14 +67,21 @@ video.addEventListener('timeupdate', () => {
 seek.addEventListener('input', () => { video.currentTime = Number(seek.value); });
 
 // ===== 2. 四隅のタップ =====
-// 4点から変換の式を作る
-function applyCalibration() {
-  const result = buildHomography(calibration.pairs(), meSide.value === 'right');
+// 4点から変換の式を作る（4点そろっていなければ、設定なしに戻す）
+function updateHomography() {
+  const pairs = calibration.pairs();
+  const result = pairs.length === 4 ? buildHomography(pairs, meSide.value === 'right') : {};
   H = result.H || null;
   Hinv = result.Hinv || null;
   box = Hinv ? courtBoxInImage(Hinv, tracker.area(), video.videoWidth, video.videoHeight) : null;
+  return result;
+}
+
+// 4点がそろった／動かし終わったとき：設定を確定して、解析の記録を数え直す
+function applyCalibration() {
+  const result = updateHomography();
   calibStatus.textContent = H
-    ? '設定できました。動画の上の黄色い線が、実際のコートの線と重なっていればOK。このコートの中にいる人が緑の点になります'
+    ? '設定できました。黄色い線が実際のコートの線と重なっていればOK（ずれていたら、黄色い点を指でつかんで動かせます）'
     : result.error;
   tracker.reset();
   render();
@@ -83,6 +91,11 @@ function applyCalibration() {
 const calibration = createCalibration(canvas, video, {
   onChange() {
     const st = calibration.state();
+    // 点を動かしている間も、黄色い線をすぐに描き直す
+    updateHomography();
+    // 設定中・設定後は、動画の上をなぞってもページがスクロールしないようにする（点のドラッグと区別するため）
+    canvas.style.touchAction = st.active || st.imagePoints.length > 0 ? 'none' : 'manipulation';
+    undoBtn.hidden = !st.canUndo;
     hiddenBtn.hidden = !st.active || st.picking || !!st.substitute;
     if (!st.picking && !st.substitute) picker.hide();
     if (st.active) {
@@ -90,7 +103,7 @@ const calibration = createCalibration(canvas, video, {
         ? '下のコート図で、動画に映っている線の交点を選んでください（隠れている角に近い点ほど正確です）'
         : st.substitute
           ? '選んだ点：' + pointName(st.substitute) + '。動画の上で、この点をタップしてください（違っていたら、コート図をもう一度タップして選び直せます）'
-          : '動画の上で、コートの「' + st.nextLabel + '」をタップしてください（見えなければ「この角は見えない」）';
+          : '動画の上で、コートの「' + st.nextLabel + '」に指を置いてください。拡大鏡が出るので、指を動かして合わせ、離したところに点が置かれます（見えなければ「この角は見えない」）';
     }
     redrawOverlay();
   },
@@ -111,6 +124,7 @@ hiddenBtn.onclick = () => {
   picker.show(calibration.state().usedCourt);
   calibration.markHidden();
 };
+undoBtn.onclick = () => calibration.undo();
 meSide.addEventListener('change', () => {
   if (calibration.pairs().length === 4) applyCalibration();
   else { tracker.reset(); render(); }

@@ -13,7 +13,8 @@ export function createOverlay(canvas, video) {
   // lines：設定から求めたコートの線 [[[x1, y1], [x2, y2]], ...]（動画のピクセル）
   // feet：[{ x, y, inCourt }]、nextLabel：次にタップする場所の名前
   // box：解析する範囲 { x, y, w, h }（点線で囲む）
-  function draw({ points = [], lines = [], box = null, feet = [], nextLabel = null }) {
+  // loupe：指を置いている所 [x, y]（拡大鏡を出す）。指を置いていなければ null
+  function draw({ points = [], lines = [], box = null, feet = [], nextLabel = null, loupe = null }) {
     fit();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const r = Math.max(4, canvas.width / 200);
@@ -51,14 +52,54 @@ export function createOverlay(canvas, video) {
     });
 
     // 次にタップする場所の案内
+    const barHeight = Math.max(16, canvas.width / 30) * 1.8;
     if (nextLabel) {
-      const size = Math.max(16, canvas.width / 30);
+      const size = barHeight / 1.8;
       ctx.font = 'bold ' + size + 'px sans-serif';
       ctx.fillStyle = 'rgba(0,0,0,.6)';
-      ctx.fillRect(0, 0, canvas.width, size * 1.8);
+      ctx.fillRect(0, 0, canvas.width, barHeight);
       ctx.fillStyle = '#fff';
-      ctx.fillText('コートの「' + nextLabel + '」をタップ', size * 0.6, size * 1.25);
+      ctx.fillText('コートの「' + nextLabel + '」をタップ（指を置いたまま動かして合わせる）', size * 0.6, size * 1.25);
     }
+
+    if (loupe) drawLoupe(loupe, barHeight, r);
+  }
+
+  // 拡大鏡：指を置いている所のまわりを3倍に広げて、指で隠れない側の上の隅に出す
+  function drawLoupe([px, py], top, r) {
+    const ZOOM = 3;
+    const R = Math.min(canvas.width, canvas.height) * 0.22;   // 拡大鏡の半径
+    const margin = R * 0.15;
+    const cx = px < canvas.width / 2 ? canvas.width - R - margin : R + margin;
+    const cy = top + R + margin;
+    const src = R / ZOOM;                                      // 動画から切り出す範囲の半径
+
+    // 指を置いている所に、小さい十字を出す
+    ctx.strokeStyle = '#ff2bd6';
+    ctx.lineWidth = Math.max(2, r / 3);
+    ctx.beginPath();
+    ctx.moveTo(px - r * 2, py); ctx.lineTo(px + r * 2, py);
+    ctx.moveTo(px, py - r * 2); ctx.lineTo(px, py + r * 2);
+    ctx.stroke();
+
+    // 丸の中に、動画と、その上に描いた線・点を広げて描く
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip();
+    ctx.fillStyle = '#000';
+    ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+    ctx.drawImage(video, px - src, py - src, src * 2, src * 2, cx - R, cy - R, R * 2, R * 2);
+    ctx.drawImage(canvas, px - src, py - src, src * 2, src * 2, cx - R, cy - R, R * 2, R * 2);
+    // 真ん中の十字（ここに点が置かれる）
+    ctx.strokeStyle = '#ff2bd6';
+    ctx.lineWidth = Math.max(2, r / 2.5);
+    ctx.beginPath();
+    ctx.moveTo(cx - R * 0.25, cy); ctx.lineTo(cx + R * 0.25, cy);
+    ctx.moveTo(cx, cy - R * 0.25); ctx.lineTo(cx, cy + R * 0.25);
+    ctx.stroke();
+    ctx.restore();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = Math.max(2, r / 2);
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
   }
 
   return { draw };

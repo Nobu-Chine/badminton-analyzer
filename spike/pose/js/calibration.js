@@ -45,31 +45,87 @@ export function courtBoxInImage(Hinv, area, videoW, videoH) {
   return { x: x1, y: y1, w: Math.max(1, x2 - x1), h: Math.max(1, y2 - y1) };
 }
 
-// タップの受付
+
+// タップとドラッグの受付
+//   指を置くと拡大鏡が出て、指をずらして位置を合わせ、離したところに点を置く（スマホで指に隠れて見えないため）
+//   置いた点は、あとから指でつかんで動かせる（4点そろったあとも、黄色い線を見ながら微調整できる）
 //   onChange()：状態が変わるたび（画面の描き直し用）
-//   onDone(pairs)：4点そろったとき
+//   onDone(pairs)：4点そろったとき、またはそろったあとに点を動かしたとき
 export function createCalibration(canvas, video, { onChange, onDone }) {
   const corners = courtGeometry().corners;
+  const GRAB = 30;         // 置いた点から、画面上で何px以内を押したら「その点をつかんだ」とみなすか
   let pairs = [];
   let active = false;
   let picking = false;     // 代わりの点をコート図で選んでいるところ
   let substitute = null;   // 選んだ代わりの点（次に動画の上でタップする点）
+  let drag = null;         // 指を置いている間：{ index: 動かしている点の番号（新しい点なら -1）, pos: 今の位置 }
 
-  canvas.addEventListener('click', (e) => {
-    if (!active || picking) return;
-    // 画面上の位置を、動画の元のピクセルに直す
+  // 画面上の位置を、動画の元のピクセルに直す
+  function toImage(e) {
     const rect = canvas.getBoundingClientRect();
-    const img = [(e.clientX - rect.left) / rect.width * video.videoWidth,
-                 (e.clientY - rect.top) / rect.height * video.videoHeight];
-    pairs.push({ img, court: substitute || corners[pairs.length] });
-    substitute = null;
-    if (pairs.length === 4) active = false;
+    return [(e.clientX - rect.left) / rect.width * video.videoWidth,
+            (e.clientY - rect.top) / rect.height * video.videoHeight];
+  }
+
+  // 押した所の近くにある、置いた点の番号（なければ -1）
+  function grabbedIndex(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scale = rect.width / video.videoWidth;
+    let best = -1;
+    let bestDist = GRAB;
+    pairs.forEach((p, i) => {
+      const d = Math.hypot(p.img[0] * scale - (e.clientX - rect.left), p.img[1] * scale - (e.clientY - rect.top));
+      if (d < bestDist) { best = i; bestDist = d; }
+    });
+    return best;
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (picking || !video.videoWidth) return;
+    const index = grabbedIndex(e);
+    if (index < 0 && !active) return; // 設定が終わったあとは、置いた点をつかんだときだけ
+    drag = { index, pos: toImage(e) };
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* 指でなく、プログラムから押したときなど */ }
+    e.preventDefault();
+    onChange();
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    drag.pos = toImage(e);
+    if (drag.index >= 0) pairs[drag.index].img = drag.pos;
+    onChange();
+  });
+
+  canvas.addEventListener('pointerup', () => {
+    if (!drag) return;
+    const { index, pos } = drag;
+    drag = null;
+    if (index < 0) {
+      // 新しい点を置く
+      pairs.push({ img: pos, court: substitute || corners[pairs.length] });
+      substitute = null;
+      if (pairs.length === 4) active = false;
+    }
     onChange();
     if (pairs.length === 4) onDone(pairs);
   });
 
+  canvas.addEventListener('pointercancel', () => {
+    if (!drag) return;
+    drag = null;
+    onChange();
+  });
+
   return {
-    start() { pairs = []; active = true; picking = false; substitute = null; onChange(); },
+    start() { pairs = []; active = true; picking = false; substitute = null; drag = null; onChange(); },
+    // 1つ戻す：代わりの点を選んでいる途中ならそれを取り消し、そうでなければ最後に置いた点を消す
+    undo() {
+      if (picking || substitute) { picking = false; substitute = null; }
+      else if (pairs.length > 0) { pairs.pop(); }
+      active = true;
+      onChange();
+    },
     // 今の番の角が見えない → コート図で代わりの点を選ぶ
     markHidden() { if (active) { picking = true; substitute = null; onChange(); } },
     // コート図で代わりの点が選ばれた
@@ -84,6 +140,10 @@ export function createCalibration(canvas, video, { onChange, onDone }) {
         imagePoints: pairs.map((p) => p.img),
         // 使用済みの点：もう使った点と、まだ使っていない残りの角（代わりの点に選ばないように）
         usedCourt: [...pairs.map((p) => p.court), ...corners.slice(pairs.length + 1)],
+        // 指を置いている所（拡大鏡を出す位置）。指を置いていなければ null
+        loupe: drag ? drag.pos : null,
+        // 戻せるものがあるか
+        canUndo: picking || !!substitute || pairs.length > 0,
       };
     },
     pairs: () => pairs,
