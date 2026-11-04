@@ -6,6 +6,7 @@ import { createPointPicker } from './pointPicker.js';
 import { loadDetector, detectFeet, lastTileCount } from './detector.js';
 import { createTracker } from './tracker.js';
 import { createOverlay } from './overlay.js';
+import { createZoom } from './zoom.js';
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('overlay');
@@ -22,6 +23,26 @@ const INTERVAL_MS = 100;  // 何ミリ秒ごとに解析するか（1秒に最�
 const TRAIL = 150;        // コート図に出す、最近の点の数（1人あたり）
 
 const overlay = createOverlay(canvas, video);
+const videoWrap = document.getElementById('videoWrap');
+const zoomResetBtn = document.getElementById('zoomResetBtn');
+// 動画の枠の中だけを2本指で拡大する。2本指で触り始めたら、1本指の操作（点を置く）は取り消す
+const zoom = createZoom(videoWrap, document.getElementById('zoomLayer'), {
+  onChange(scale) {
+    zoomResetBtn.hidden = scale <= 1.01;
+    updateTouchAction();
+    redrawOverlay();
+  },
+  onGestureStart: () => calibration.cancelDrag(),
+});
+zoomResetBtn.onclick = () => zoom.reset();
+
+// 動画の上を指でなぞったときにページをスクロールさせるかどうか
+//   四隅の設定中・設定後・拡大中は、指の操作を点やピンチに使うのでスクロールしない
+function updateTouchAction() {
+  const st = calibration.state();
+  const busy = st.active || st.imagePoints.length > 0 || zoom.scale() > 1.01;
+  videoWrap.style.touchAction = busy ? 'none' : 'pan-y';
+}
 const tracker = createTracker(Rules.zone);
 let H = null;             // 映像 → コートの変換の式
 let Hinv = null;          // コート → 映像の変換の式（動画の上にコートの線を描く用）
@@ -43,7 +64,8 @@ function redrawOverlay() {
   // 設定ができたら、その設定でコートの線を動画の上に描く（実際の線と重なれば合っている）
   // コートの線は「自分は左／右」で入れ替えても同じ形なので、そのまま変換できる
   const lines = Hinv ? courtGeometry().segments.map(([a, b]) => [applyHomography(Hinv, a), applyHomography(Hinv, b)]) : [];
-  overlay.draw({ points: st.imagePoints, lines, box, feet: lastFeet, nextLabel: st.nextLabel, loupe: st.loupe });
+  overlay.draw({ points: st.imagePoints, lines, box, feet: lastFeet, nextLabel: st.nextLabel,
+    preview: st.preview, zoom: zoom.scale() });
 }
 
 // ===== 1. 動画 =====
@@ -52,6 +74,7 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   if (!file) return;
   if (video.src) URL.revokeObjectURL(video.src);
   video.src = URL.createObjectURL(file);
+  zoom.reset();
   tracker.reset();
   costs = [];
   render();
@@ -93,8 +116,7 @@ const calibration = createCalibration(canvas, video, {
     const st = calibration.state();
     // 点を動かしている間も、黄色い線をすぐに描き直す
     updateHomography();
-    // 設定中・設定後は、動画の上をなぞってもページがスクロールしないようにする（点のドラッグと区別するため）
-    canvas.style.touchAction = st.active || st.imagePoints.length > 0 ? 'none' : 'manipulation';
+    updateTouchAction();
     undoBtn.hidden = !st.canUndo;
     hiddenBtn.hidden = !st.active || st.picking || !!st.substitute;
     if (!st.picking && !st.substitute) picker.hide();
@@ -103,11 +125,12 @@ const calibration = createCalibration(canvas, video, {
         ? '下のコート図で、動画に映っている線の交点を選んでください（隠れている角に近い点ほど正確です）'
         : st.substitute
           ? '選んだ点：' + pointName(st.substitute) + '。動画の上で、この点をタップしてください（違っていたら、コート図をもう一度タップして選び直せます）'
-          : '動画の上で、コートの「' + st.nextLabel + '」に指を置いてください。拡大鏡が出るので、指を動かして合わせ、離したところに点が置かれます（見えなければ「この角は見えない」）';
+          : '動画の上で、コートの「' + st.nextLabel + '」に指を置いてください。指を動かして合わせ、離したところに点が置かれます。細かい所は2本指で拡大できます（見えなければ「この角は見えない」）';
     }
     redrawOverlay();
   },
   onDone: applyCalibration,
+  isBlocked: () => zoom.isGesturing(),
 });
 
 const picker = createPointPicker(document.getElementById('pointPicker'), (p) => calibration.pick(p));

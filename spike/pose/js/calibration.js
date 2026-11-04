@@ -46,12 +46,13 @@ export function courtBoxInImage(Hinv, area, videoW, videoH) {
 }
 
 
-// タップとドラッグの受付
-//   指を置くと拡大鏡が出て、指をずらして位置を合わせ、離したところに点を置く（スマホで指に隠れて見えないため）
+// タップとドラッグの受付（1本指）
+//   指を置いて、ずらして位置を合わせ、離したところに点を置く（細かい所は2本指で拡大してから）
 //   置いた点は、あとから指でつかんで動かせる（4点そろったあとも、黄色い線を見ながら微調整できる）
 //   onChange()：状態が変わるたび（画面の描き直し用）
 //   onDone(pairs)：4点そろったとき、またはそろったあとに点を動かしたとき
-export function createCalibration(canvas, video, { onChange, onDone }) {
+//   isBlocked()：true の間は点を置かない（2本指で拡大している間など）
+export function createCalibration(canvas, video, { onChange, onDone, isBlocked = () => false }) {
   const corners = courtGeometry().corners;
   const GRAB = 30;         // 置いた点から、画面上で何px以内を押したら「その点をつかんだ」とみなすか
   let pairs = [];
@@ -81,10 +82,10 @@ export function createCalibration(canvas, video, { onChange, onDone }) {
   }
 
   canvas.addEventListener('pointerdown', (e) => {
-    if (picking || !video.videoWidth) return;
+    if (picking || !video.videoWidth || isBlocked()) return;
     const index = grabbedIndex(e);
     if (index < 0 && !active) return; // 設定が終わったあとは、置いた点をつかんだときだけ
-    drag = { index, pos: toImage(e) };
+    drag = { index, pos: toImage(e), from: index >= 0 ? pairs[index].img : null };
     try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* 指でなく、プログラムから押したときなど */ }
     e.preventDefault();
     onChange();
@@ -119,6 +120,13 @@ export function createCalibration(canvas, video, { onChange, onDone }) {
 
   return {
     start() { pairs = []; active = true; picking = false; substitute = null; drag = null; onChange(); },
+    // 指の操作を取り消す（2本指で拡大し始めたとき：点を置かない・動かさない）
+    cancelDrag() {
+      if (!drag) return;
+      if (drag.index >= 0) pairs[drag.index].img = drag.from;
+      drag = null;
+      onChange();
+    },
     // 1つ戻す：代わりの点を選んでいる途中ならそれを取り消し、そうでなければ最後に置いた点を消す
     undo() {
       if (picking || substitute) { picking = false; substitute = null; }
@@ -140,8 +148,8 @@ export function createCalibration(canvas, video, { onChange, onDone }) {
         imagePoints: pairs.map((p) => p.img),
         // 使用済みの点：もう使った点と、まだ使っていない残りの角（代わりの点に選ばないように）
         usedCourt: [...pairs.map((p) => p.court), ...corners.slice(pairs.length + 1)],
-        // 指を置いている所（拡大鏡を出す位置）。指を置いていなければ null
-        loupe: drag ? drag.pos : null,
+        // 新しい点を置こうとして指を置いている所（離すとここに点が置かれる）。なければ null
+        preview: drag && drag.index < 0 ? drag.pos : null,
         // 戻せるものがあるか
         canUndo: picking || !!substitute || pairs.length > 0,
       };

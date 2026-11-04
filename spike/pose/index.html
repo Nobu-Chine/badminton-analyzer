@@ -16,10 +16,15 @@
   <section class="card">
     <h2>1. 動画を選ぶ</h2>
     <label class="btn primary">動画を選ぶ<input type="file" id="fileInput" accept="video/*"></label>
-    <div class="video-wrap">
-      <video id="video" playsinline muted></video>
-      <canvas id="overlay"></canvas>
+    <!-- 2本指でピンチすると、この枠の中だけ拡大できる（zoom.js） -->
+    <div class="video-wrap" id="videoWrap">
+      <div class="zoom-layer" id="zoomLayer">
+        <video id="video" playsinline muted></video>
+        <canvas id="overlay"></canvas>
+      </div>
+      <button class="zoom-reset" id="zoomResetBtn" hidden>拡大を戻す</button>
     </div>
+    <p class="note">細かい所は、動画を2本指でピンチして拡大できます（2本指のまま動かすと移動）。</p>
     <input type="range" id="seek" min="0" max="0" step="0.1" value="0">
     <div class="time" id="time">0:00 / 0:00</div>
   </section>
