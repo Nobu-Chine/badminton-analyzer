@@ -69,6 +69,13 @@
     <p class="legend"><span class="me">●</span> 自分　<span class="opp">●</span> 相手（最近の動きを点で表示）</p>
     <svg id="court" xmlns="http://www.w3.org/2000/svg"></svg>
     <div id="stats"></div>
+    <!-- 検証結果を GitHub の PR #2 にコメントで貼るためのコピー -->
+    <div class="row report-row">
+      <button class="btn primary" id="copyBtn">結果をコピー</button>
+      <a class="btn" href="https://github.com/Nobu-Chine/badminton-analyzer/pull/2" target="_blank" rel="noopener">PR #2 を開く ↗</a>
+    </div>
+    <p class="status" id="copyStatus"></p>
+    <textarea id="reportText" readonly hidden></textarea>
   </section>
 
   <!-- 試作ページは結果を保存しないので、本体は別のタブで開く（この画面と解析結果を残すため） -->

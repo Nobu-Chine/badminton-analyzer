@@ -7,6 +7,7 @@ import { loadDetector, detectFeet, lastTileCount } from './detector.js';
 import { createTracker } from './tracker.js';
 import { createOverlay } from './overlay.js';
 import { createZoom } from './zoom.js';
+import { buildReport } from './report.js';
 
 const video = document.getElementById('video');
 const canvas = document.getElementById('overlay');
@@ -51,6 +52,15 @@ let lastFeet = [];        // 直近のコマで見つかった足元（表示用
 let lastRun = 0;
 let lastStamp = 0;
 let costs = [];           // 1コマの処理にかかった時間（ミリ秒）
+let videoName = '';       // 選んだ動画のファイル名（検証結果に書く）
+let range = null;         // 解析した動画の範囲 { from, to }（秒）
+
+// 解析の記録を消して、数え直す（動画や四隅の設定を変えたとき）
+function resetAnalysis() {
+  tracker.reset();
+  costs = [];
+  range = null;
+}
 
 Court.init(() => {});     // コート図は表示だけ（タップは使わない）
 
@@ -74,9 +84,9 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   if (!file) return;
   if (video.src) URL.revokeObjectURL(video.src);
   video.src = URL.createObjectURL(file);
+  videoName = file.name;
   zoom.reset();
-  tracker.reset();
-  costs = [];
+  resetAnalysis();
   render();
 });
 video.addEventListener('loadedmetadata', () => {
@@ -106,7 +116,7 @@ function applyCalibration() {
   calibStatus.textContent = H
     ? '設定できました。黄色い線が実際のコートの線と重なっていればOK（ずれていたら、黄色い点を指でつかんで動かせます）'
     : result.error;
-  tracker.reset();
+  resetAnalysis();
   render();
   redrawOverlay();
 }
@@ -150,7 +160,7 @@ hiddenBtn.onclick = () => {
 undoBtn.onclick = () => calibration.undo();
 meSide.addEventListener('change', () => {
   if (calibration.pairs().length === 4) applyCalibration();
-  else { tracker.reset(); render(); }
+  else { resetAnalysis(); render(); }
 });
 
 // ===== 3. 解析しながら再生 =====
@@ -170,6 +180,8 @@ function analyze() {
   const feetCourt = feetImg.map((p) => applyHomography(H, p));
   lastFeet = feetImg.map(([x, y], i) => ({ x, y, inCourt: tracker.inCourt(feetCourt[i]) }));
   tracker.update(feetCourt, video.currentTime);
+  const t = video.currentTime;
+  range = range ? { from: Math.min(range.from, t), to: Math.max(range.to, t) } : { from: t, to: t };
   redrawOverlay();
 }
 
@@ -204,7 +216,7 @@ video.addEventListener('pause', () => {
   runBtn.textContent = '▶ 解析しながら再生';
   if (H) runStatus.textContent = '止めました';
 });
-document.getElementById('resetBtn').onclick = () => { tracker.reset(); costs = []; lastFeet = []; render(); redrawOverlay(); };
+document.getElementById('resetBtn').onclick = () => { resetAnalysis(); lastFeet = []; render(); redrawOverlay(); };
 
 // 試作ページは結果を保存しないので、解析したあとにページを離れようとしたら確認を出す
 window.addEventListener('beforeunload', (e) => {
@@ -214,6 +226,13 @@ window.addEventListener('beforeunload', (e) => {
 });
 
 // ===== 結果の表示 =====
+function averageCost() {
+  return costs.length ? costs.reduce((a, b) => a + b, 0) / costs.length : 0;
+}
+// 1秒に何コマ解析できるか（解析の間隔の上限 10コマ を超えない）
+function framesPerSecond(avgCost) {
+  return avgCost ? Math.min(1000 / INTERVAL_MS, 1000 / avgCost) : 0;
+}
 function render() {
   const players = tracker.trails();
   const points = [
@@ -224,7 +243,7 @@ function render() {
   Court.drawDots(points, (p) => (p.side === '自分' ? '得点' : '失点'));
 
   const s = tracker.summary();
-  const avgCost = costs.length ? costs.reduce((a, b) => a + b, 0) / costs.length : 0;
+  const avgCost = averageCost();
   const zones = ['ネット前', '中盤', 'コート奥', 'コート外'];
   const row = (name) => {
     const p = s[name];
@@ -235,7 +254,7 @@ function render() {
   };
   document.getElementById('stats').innerHTML =
     '<p class="perf">1コマの処理：' + avgCost.toFixed(0) + ' ms（タイル ' + lastTileCount() + ' 枚）' +
-    (avgCost ? '（1秒に約 ' + Math.min(1000 / INTERVAL_MS, 1000 / avgCost).toFixed(1) + ' コマ）' : '') +
+    (avgCost ? '（1秒に約 ' + framesPerSecond(avgCost).toFixed(1) + ' コマ）' : '') +
     '<br>解析したコマ数：' + s.frames +
     '<br>見つかった人（平均）：' + s.avgDetected.toFixed(1) + '人、うち対象のコート内：' + s.avgInCourt.toFixed(1) + '人</p>' +
     '<table><tr><th></th><th>移動</th>' + zones.map((z) => '<th>' + z + '</th>').join('') + '<th>見つけた割合</th></tr>' +
@@ -244,3 +263,34 @@ function render() {
 setInterval(() => { if (!video.paused) render(); }, 500);
 video.addEventListener('pause', render);
 render();
+
+// ===== 検証結果のコピー（GitHub の PR #2 にコメントで貼るため） =====
+const copyStatus = document.getElementById('copyStatus');
+const reportText = document.getElementById('reportText');
+document.getElementById('copyBtn').onclick = async () => {
+  const s = tracker.summary();
+  if (s.frames === 0) { copyStatus.textContent = 'まだ解析していません。解析してから押してください'; return; }
+  const avgCost = averageCost();
+  const text = buildReport({
+    videoName: videoName || '（不明）',
+    duration: video.duration,
+    from: range ? range.from : 0,
+    to: range ? range.to : 0,
+    modelLabel: modelSelect.options[modelSelect.selectedIndex].text,
+    avgCost,
+    tiles: lastTileCount(),
+    fps: framesPerSecond(avgCost),
+    summary: s,
+  });
+  reportText.value = text;
+  try {
+    await navigator.clipboard.writeText(text);
+    reportText.setAttribute('hidden', '');
+    copyStatus.textContent = 'コピーしました。「PR #2 を開く」→ いちばん下のコメント欄に貼り付けて、メモを書き足して「Comment」を押してください';
+  } catch (e) {
+    // コピーできない環境では、文章を出して手で選んでもらう
+    reportText.removeAttribute('hidden');
+    reportText.select();
+    copyStatus.textContent = '自動でコピーできませんでした。下の文章を長押しして、全部選んでコピーしてください';
+  }
+};
