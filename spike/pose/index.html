@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>動き解析の試作</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>🧪 動き解析の試作（お試し調査）</h1>
+  <p>四隅をタップしたコートのシングルスの2人をAI（物体検出）で見つけて、足元の位置を、コート図に打ちます（手前・奥どちらのコートでも可）。動画はどこにも送りません。</p>
+</header>
+
+<main>
+  <section class="card">
+    <h2>1. 動画を選ぶ</h2>
+    <label class="btn primary">動画を選ぶ<input type="file" id="fileInput" accept="video/*"></label>
+    <!-- 2本指でピンチすると、この枠の中だけ拡大できる（zoom.js） -->
+    <div class="video-wrap" id="videoWrap">
+      <div class="zoom-layer" id="zoomLayer">
+        <video id="video" playsinline muted></video>
+        <canvas id="overlay"></canvas>
+      </div>
+      <button class="zoom-reset" id="zoomResetBtn" hidden>拡大を戻す</button>
+    </div>
+    <p class="note">細かい所は、動画を2本指でピンチして拡大できます（2本指のまま動かすと移動）。</p>
+    <input type="range" id="seek" min="0" max="0" step="0.1" value="0">
+    <div class="time" id="time">0:00 / 0:00</div>
+  </section>
+
+  <section class="card">
+    <h2>2. コートの四隅をタップ</h2>
+    <p class="note">いちばん外側の線（ダブルスのサイドラインとバックライン）の角を、案内の順にタップしてください。
+      画面に入っていない角は「この角は見えない」を押して、代わりに別の線の交点を使えます。</p>
+    <div class="row">
+      <button class="btn" id="calibBtn">四隅をタップする</button>
+      <button class="btn" id="undoBtn" hidden>↩ 1つ戻す</button>
+      <button class="btn" id="hiddenBtn" hidden>この角は見えない</button>
+      <label class="select">自分は
+        <select id="meSide">
+          <option value="right">画面の右側</option>
+          <option value="left">画面の左側</option>
+        </select>
+      </label>
+    </div>
+    <!-- 代わりの点を選ぶコート図（動画と同じ向き） -->
+    <svg id="pointPicker" xmlns="http://www.w3.org/2000/svg" hidden></svg>
+    <p class="status" id="calibStatus">まだ設定していません</p>
+  </section>
+
+  <section class="card">
+    <h2>3. 解析しながら再生</h2>
+    <div class="row">
+      <label class="select">AI
+        <select id="model">
+          <option value="lite">軽い（速い・人を見つける AI：lite0）</option>
+          <option value="full">精度が高い（重い・lite2）</option>
+        </select>
+      </label>
+      <button class="btn primary" id="runBtn">▶ 解析しながら再生</button>
+      <button class="btn" id="resetBtn">記録を消す</button>
+    </div>
+    <p class="status" id="runStatus"></p>
+  </section>
+
+  <section class="card">
+    <h2>結果</h2>
+    <p class="legend"><span class="me">●</span> 自分　<span class="opp">●</span> 相手（最近の動きを点で表示）</p>
+    <svg id="court" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="stats"></div>
+    <!-- 検証結果を GitHub の PR #2 にコメントで貼るためのコピー -->
+    <div class="row report-row">
+      <button class="btn primary" id="copyBtn">結果をコピー</button>
+      <a class="btn" href="https://github.com/Nobu-Chine/badminton-analyzer/pull/2" target="_blank" rel="noopener">PR #2 を開く ↗</a>
+    </div>
+    <p class="status" id="copyStatus"></p>
+    <textarea id="reportText" readonly hidden></textarea>
+  </section>
+
+  <!-- 試作ページは結果を保存しないので、本体は別のタブで開く（この画面と解析結果を残すため） -->
+  <p class="back"><a href="../../" target="_blank" rel="noopener">本体のアプリを開く（別のタブ）↗</a></p>
+</main>
+
+<!-- 本体の部品をそのまま使う：コートの寸法、エリアの判定、コート図 -->
+<script src="../../js/settings.js"></script>
+<script src="../../js/rules.js"></script>
+<script src="../../js/court.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
