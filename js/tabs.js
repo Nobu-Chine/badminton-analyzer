@@ -2,13 +2,14 @@
 // ボタンの data-tab と、中身の data-panel が同じ名前のものを見せる。
 const Tabs = {
   init() {
-    const buttons = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.tab-panel');
-    buttons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        buttons.forEach((b) => b.classList.toggle('active', b === btn));
-        panels.forEach((p) => { p.hidden = p.dataset.panel !== btn.dataset.tab; });
-      });
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => Tabs.select(btn.dataset.tab));
     });
+  },
+
+  // name のタブに切り替える（集計の棒を押したときなど、プログラムからも使う）
+  select(name) {
+    document.querySelectorAll('.tab-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
+    document.querySelectorAll('.tab-panel').forEach((p) => { p.hidden = p.dataset.panel !== name; });
   },
 };

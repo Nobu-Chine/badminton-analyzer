@@ -3,8 +3,12 @@ const StatsView = (() => {
   const box = document.getElementById('stats');
   const scope = document.getElementById('statsScope');
 
+  let onPick = null;
+
   // onScopeChange('match' | 'all')：「この試合／全試合」が切り替わったとき
-  function init(onScopeChange) {
+  // onSelect(choice)：棒が押されたとき。choice は { section, key, label, description }
+  function init({ onScopeChange, onSelect }) {
+    onPick = onSelect;
     scope.addEventListener('change', () => onScopeChange(scope.value));
   }
 
@@ -15,13 +19,21 @@ const StatsView = (() => {
     return e;
   }
 
-  // 1つの内訳（例：ショット別）を、横棒と数で表示する
-  function renderGroup(group, kind, max) {
+  // 1つの内訳（例：ショット別）を、横棒と数で表示する。棒を押すと、その場面に絞り込む
+  function renderGroup(section, group, max) {
+    const kind = section.kind;
     const wrap = el('div', 'stats-group');
     wrap.appendChild(el('div', 'stats-group-label', group.label));
     group.items.forEach((item) => {
-      const row = el('div', 'stats-row');
-      row.title = item.label + '：' + item.count + '回';
+      const row = el('button', 'stats-row');
+      row.type = 'button';
+      row.title = item.label + '：' + item.count + '回（押すと、この場面だけを一覧に出します）';
+      row.onclick = () => onPick({
+        section: section.index,
+        key: group.key,
+        label: item.label,
+        description: section.title + '／' + group.label + '：' + item.label,
+      });
       row.appendChild(el('span', 'stats-name', item.label));
       const track = el('span', 'stats-track');
       const bar = el('span', 'stats-bar ' + (kind === '得点' ? 'point' : 'miss'));
@@ -58,7 +70,7 @@ const StatsView = (() => {
       sec.appendChild(el('h3', '', s.title + '（' + s.count + '回）'));
       // 同じ区切りの中は、同じものさしで棒の長さを比べる
       const max = Math.max(...s.groups.flatMap((g) => g.items.map((i) => i.count)));
-      s.groups.forEach((g) => sec.appendChild(renderGroup(g, s.kind, max)));
+      s.groups.forEach((g) => sec.appendChild(renderGroup(s, g, max)));
       box.appendChild(sec);
     });
   }

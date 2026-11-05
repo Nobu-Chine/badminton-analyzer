@@ -66,6 +66,14 @@
     </div>
 
     <div class="tab-panel" data-panel="list">
+      <!-- 集計の棒を押したときの絞り込み（recordFilter.js） -->
+      <div class="filter-bar" id="filterBar" hidden>
+        <span id="filterText"></span>
+        <div class="filter-actions">
+          <button id="playAllBtn">▶ 順に再生</button>
+          <button id="clearFilterBtn">✕ 解除</button>
+        </div>
+      </div>
       <p class="tab-note">押すとその少し前から再生</p>
       <ul id="records"></ul>
     </div>
@@ -77,6 +85,7 @@
           <option value="all">全試合</option>
         </select>
       </div>
+      <p class="tab-note">棒を押すと、その場面だけを記録一覧に出します（順に再生もできます）</p>
       <div id="stats"></div>
     </div>
   </section>
@@ -142,6 +151,8 @@
 <script src="js/statsView.js"></script>
 <script src="js/tabs.js"></script>
 <script src="js/backup.js"></script>
+<script src="js/recordFilter.js"></script>
+<script src="js/playlist.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
