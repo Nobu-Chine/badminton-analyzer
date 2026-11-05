@@ -26,11 +26,19 @@ const Stats = (() => {
       match: (r) => r.player === '自分' && r.outcome === '決まった' && r.setupShot, by: ['setupShot'] },
   ];
 
+  const NONE = '（未選択）';
+
+  // 記録から「何で分けるか」の値を取り出す関数（落ちた場所だけは位置から判定する）
+  function valueFn(key, zoneOf) {
+    if (key === 'zone') return (r) => zoneOf(r) || 'コート外';
+    return (r) => r[key];
+  }
+
   // 値を数えて、多い順に並べる → [{ label, count }]
   function countBy(records, valueOf) {
     const counts = {};
     records.forEach((r) => {
-      const label = valueOf(r) || '（未選択）';
+      const label = valueOf(r) || NONE;
       counts[label] = (counts[label] || 0) + 1;
     });
     return Object.entries(counts)
@@ -41,27 +49,34 @@ const Stats = (() => {
   // records を集計する
   // scoreOf(record)：'得点' か '失点' / zoneOf(record)：落ちた場所（コート外は null）
   function summarize(records, { scoreOf, zoneOf }) {
-    const valueOf = {
-      zone: (r) => zoneOf(r) || 'コート外',
-    };
     return {
       total: records.length,
       points: records.filter((r) => scoreOf(r) === '得点').length,
       losses: records.filter((r) => scoreOf(r) === '失点').length,
-      sections: SECTIONS.map((s) => {
+      sections: SECTIONS.map((s, index) => {
         const hit = records.filter(s.match);
         return {
+          index,
           title: s.title,
           kind: s.kind,
           count: hit.length,
           groups: s.by.map((key) => ({
+            key,
             label: BY_LABELS[key],
-            items: countBy(hit, valueOf[key] || ((r) => r[key])),
+            items: countBy(hit, valueFn(key, zoneOf)),
           })),
         };
       }),
     };
   }
 
-  return { summarize };
+  // 集計の棒1本に当てはまる記録かどうかを判定する関数を返す（数え方と同じルール）
+  //   choice：{ section: 区切りの番号, key: 何で分けたか, label: 棒の名前 }
+  function filterFor({ section, key, label }, { zoneOf }) {
+    const s = SECTIONS[section];
+    const valueOf = valueFn(key, zoneOf);
+    return (r) => !!s.match(r) && (valueOf(r) || NONE) === label;
+  }
+
+  return { summarize, filterFor };
 })();

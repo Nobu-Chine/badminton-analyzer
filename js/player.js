@@ -80,6 +80,8 @@ const Player = (() => {
     formatTime,
     hasVideo,
     isPaused: () => video.paused,
+    isEnded: () => video.ended,
+    pause: () => video.pause(),
     currentTime: () => video.currentTime,
     seekAndPlay(time) {
       const go = () => {
