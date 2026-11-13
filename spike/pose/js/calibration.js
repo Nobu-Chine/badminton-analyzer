@@ -7,20 +7,21 @@ import { courtGeometry, quadArea } from './courtPoints.js';
 export const CORNER_LABELS = ['左奥', '右奥', '右手前', '左手前'];
 const MIN_AREA = 8; // 4点が作る四角形がこれより小さい（m²）と、正確に変換できない
 
-// 自分が画面の左側なら、コート図の上下・左右を入れ替えて、自分がいつも下（y>0）に来るようにする
-function toCourt([x, y], meOnRight) {
-  return meOnRight ? [x, y] : [Settings.court.width - x, -y];
+// 自分が画面の左側にいる時間は、コート上の位置の上下・左右を入れ替えて、自分がいつも y>0 に来るようにする
+// （どちら側にいるかは、コートチェンジで時間ごとに変わるので、四隅の設定とは分けて、解析のたびに当てはめる）
+export function toMySide([x, y], side) {
+  return side === 'right' ? [x, y] : [Settings.court.width - x, -y];
 }
 
-// pairs：[{ img: [x, y], court: [x, y] }]（court は基準の向き）
+// pairs：[{ img: [x, y], court: [x, y] }]（court は基準の向き＝画面の右側が y>0）
 // 戻り値：{ H: 映像→コート, Hinv: コート→映像 } か、作れなければ { error: 理由 }
-export function buildHomography(pairs, meOnRight) {
+export function buildHomography(pairs) {
   if (pairs.length !== 4) return { error: '4点そろっていません' };
   if (quadArea(pairs.map((p) => p.court)) < MIN_AREA) {
     return { error: '選んだ点が近すぎるか、一直線に並んでいます。なるべく離れた点を選んでください' };
   }
   const img = pairs.map((p) => p.img);
-  const court = pairs.map((p) => toCourt(p.court, meOnRight));
+  const court = pairs.map((p) => p.court);
   const H = computeHomography(img, court);
   const Hinv = computeHomography(court, img);
   return H && Hinv ? { H, Hinv } : { error: '点が読み取れませんでした。もう一度タップしてください' };

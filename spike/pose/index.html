@@ -37,13 +37,15 @@
       <button class="btn" id="calibBtn">四隅をタップする</button>
       <button class="btn" id="undoBtn" hidden>↩ 1つ戻す</button>
       <button class="btn" id="hiddenBtn" hidden>この角は見えない</button>
-      <label class="select">自分は
-        <select id="meSide">
-          <option value="right">画面の右側</option>
-          <option value="left">画面の左側</option>
-        </select>
-      </label>
     </div>
+    <!-- 自分が画面の左右どちらにいるか。コートチェンジの場面で押すと、その動画の時間を覚える -->
+    <div class="row side-row">
+      <span>自分</span>
+      <button class="btn small" data-me-side="left">左</button>
+      <button class="btn small" data-me-side="right">右</button>
+      <small>コートチェンジの場面で押す（動画の時間を覚えます）</small>
+    </div>
+    <div class="side-changes" id="sideChanges" hidden></div>
     <!-- 代わりの点を選ぶコート図（動画と同じ向き） -->
     <svg id="pointPicker" xmlns="http://www.w3.org/2000/svg" hidden></svg>
     <p class="status" id="calibStatus">まだ設定していません</p>

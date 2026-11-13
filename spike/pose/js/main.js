@@ -1,6 +1,8 @@
 // 試作ページの部品をつなぐだけのファイル。
 import { applyHomography } from './homography.js';
-import { buildHomography, createCalibration, courtBoxInImage } from './calibration.js';
+import { buildHomography, createCalibration, courtBoxInImage, toMySide } from './calibration.js';
+import { createSideTimeline } from './sideTimeline.js';
+import { createSideView } from './sideView.js';
 import { courtGeometry, pointName } from './courtPoints.js';
 import { createPointPicker } from './pointPicker.js';
 import { loadDetector, detectFeet, lastTileCount } from './detector.js';
@@ -17,7 +19,6 @@ const runStatus = document.getElementById('runStatus');
 const calibStatus = document.getElementById('calibStatus');
 const hiddenBtn = document.getElementById('hiddenBtn');
 const undoBtn = document.getElementById('undoBtn');
-const meSide = document.getElementById('meSide');
 const modelSelect = document.getElementById('model');
 
 const INTERVAL_MS = 100;  // 何ミリ秒ごとに解析するか（1秒に最大10コマ）
@@ -85,6 +86,7 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   if (video.src) URL.revokeObjectURL(video.src);
   video.src = URL.createObjectURL(file);
   videoName = file.name;
+  sides.reset();
   zoom.reset();
   resetAnalysis();
   render();
@@ -103,7 +105,7 @@ seek.addEventListener('input', () => { video.currentTime = Number(seek.value); }
 // 4点から変換の式を作る（4点そろっていなければ、設定なしに戻す）
 function updateHomography() {
   const pairs = calibration.pairs();
-  const result = pairs.length === 4 ? buildHomography(pairs, meSide.value === 'right') : {};
+  const result = pairs.length === 4 ? buildHomography(pairs) : {};
   H = result.H || null;
   Hinv = result.Hinv || null;
   box = Hinv ? courtBoxInImage(Hinv, tracker.area(), video.videoWidth, video.videoHeight) : null;
@@ -158,10 +160,28 @@ hiddenBtn.onclick = () => {
   calibration.markHidden();
 };
 undoBtn.onclick = () => calibration.undo();
-meSide.addEventListener('change', () => {
-  if (calibration.pairs().length === 4) applyCalibration();
-  else { resetAnalysis(); render(); }
+
+// ===== 自分の左右（コートチェンジ） =====
+// 押した時点の動画の時間を覚え、それより後は自分がその側にいるとみなす
+const sides = createSideTimeline('right');
+const sideView = createSideView({
+  onPress(side) {
+    if (!video.src) { alert('先に動画を選んでください'); return; }
+    sides.set(video.currentTime, side);
+    syncSideView();
+  },
+  onRemove(index) {
+    sides.remove(index);
+    syncSideView();
+  },
 });
+// 今の時間の向きと、コートチェンジの一覧を表示に反映する
+function syncSideView() {
+  sideView.render(sides.sideAt(video.currentTime || 0), sides.list(), fmt);
+}
+video.addEventListener('timeupdate', syncSideView);
+video.addEventListener('seeked', syncSideView);
+syncSideView();
 
 // ===== 3. 解析しながら再生 =====
 // 1コマ分を解析する
@@ -177,7 +197,9 @@ function analyze() {
   costs.push(performance.now() - t0);
   if (costs.length > 50) costs.shift();
 
-  const feetCourt = feetImg.map((p) => applyHomography(H, p));
+  // その時間に自分がいる側に合わせて、自分がいつも y>0 に来るようにそろえる（コートチェンジをまたいでも、自分は自分）
+  const side = sides.sideAt(video.currentTime);
+  const feetCourt = feetImg.map((p) => toMySide(applyHomography(H, p), side));
   lastFeet = feetImg.map(([x, y], i) => ({ x, y, inCourt: tracker.inCourt(feetCourt[i]) }));
   tracker.update(feetCourt, video.currentTime);
   const t = video.currentTime;
@@ -281,6 +303,7 @@ document.getElementById('copyBtn').onclick = async () => {
     tiles: lastTileCount(),
     fps: framesPerSecond(avgCost),
     summary: s,
+    sides: sides.list(),
   });
   reportText.value = text;
   try {

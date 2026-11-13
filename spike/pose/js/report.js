@@ -16,7 +16,7 @@ function fmt(sec) {
   return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 }
 
-// info：{ videoName, duration, from, to, modelLabel, avgCost, tiles, fps, summary }
+// info：{ videoName, duration, from, to, modelLabel, avgCost, tiles, fps, summary, sides }
 //   summary は tracker.summary() の結果
 export function buildReport(info) {
   const s = info.summary;
@@ -32,6 +32,9 @@ export function buildReport(info) {
     '【動き解析 検証結果】',
     '動画：' + info.videoName + '（全体 ' + fmt(info.duration) + '、' + fmt(info.from) + '〜' + fmt(info.to) + ' を解析）',
     'AI：' + info.modelLabel + '／端末：' + deviceName(),
+    'コートチェンジ：' + (info.sides && info.sides.length > 0
+      ? info.sides.map((c) => fmt(c.time) + ' 自分が' + (c.side === 'left' ? '左' : '右')).join(' → ')
+      : 'なし（自分は右）'),
     '1コマ ' + Math.round(info.avgCost) + 'ms（タイル' + info.tiles + '枚）・1秒に約' + info.fps.toFixed(1) + 'コマ・解析 ' + s.frames + 'コマ',
     '見つかった人 平均' + s.avgDetected.toFixed(1) + '人、うち対象のコート内 ' + s.avgInCourt.toFixed(1) + '人',
     player('自分'),
