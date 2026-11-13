@@ -18,6 +18,8 @@ const RecordFilter = (() => {
     set(matches, description) { current = { matches, description }; },
     clear() { current = null; },
     isActive: () => !!current,
+    // 帯が見える所までスクロールする（集計が長いと、切り替えた一覧が画面の外に出てしまうため）
+    reveal() { bar.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
     // 絞り込み中なら当てはまる記録だけ、そうでなければ全部を返す
     apply(records) { return current ? records.filter(current.matches) : records; },
 

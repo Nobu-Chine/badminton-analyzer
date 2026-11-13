@@ -124,7 +124,9 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 /* 棒は押せる（ボタン）。見た目はふつうの行のまま */
 button.stats-row { width: 100%; border: none; background: none; padding: 5px 2px; font: inherit; font-size: 13px;
   color: inherit; text-align: left; cursor: pointer; border-radius: 6px; }
-button.stats-row:hover, button.stats-row:active { background: #f1f5f3; }
+button.stats-row:hover, button.stats-row:active { background: #e3efe8; }
+/* スマホで押した瞬間に色が変わるようにする（押せたことがわかるように） */
+button.stats-row { -webkit-tap-highlight-color: rgba(31, 111, 74, .25); }
 .stats-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stats-track { height: 10px; }
 .stats-bar { display: block; height: 100%; min-width: 4px; border-radius: 0 4px 4px 0; }

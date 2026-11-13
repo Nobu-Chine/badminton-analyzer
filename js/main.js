@@ -116,6 +116,7 @@ StatsView.init({
     RecordFilter.set(Stats.filterFor(choice, { zoneOf: Rules.zone }), choice.description);
     Tabs.select('list');
     refresh();
+    RecordFilter.reveal();
   },
 });
 
