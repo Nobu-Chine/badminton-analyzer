@@ -31,12 +31,29 @@ const Player = (() => {
 
   const placeholder = document.getElementById('placeholder');
   const defaultMessage = placeholder.innerHTML;
+  const bar = document.getElementById('videoBar');
+  const seek = document.getElementById('videoSeek');
+  let seeking = false; // バーを指で動かしている間は、再生位置でバーを動かさない
+
+  // 再生位置のバーを、今の位置に合わせる
+  function showSeek() {
+    seek.max = video.duration || 0;
+    if (!seeking) seek.value = video.currentTime;
+  }
+
+  // 全画面にする。iPhone は動画専用の全画面（標準の操作つき）、ほかはブラウザの全画面
+  function fullscreen() {
+    if (!hasVideo()) return;
+    if (video.webkitEnterFullscreen) { video.webkitEnterFullscreen(); return; }
+    if (video.requestFullscreen) video.requestFullscreen();
+  }
 
   // 動画をブラウザ内だけで再生（URL.createObjectURL はファイルをアップロードせずに参照する仕組み）
   function load(file) {
     if (video.src) URL.revokeObjectURL(video.src);
     video.src = URL.createObjectURL(file);
     video.style.display = 'block';
+    bar.hidden = false;
     placeholder.style.display = 'none';
     document.getElementById('fileName').textContent = file.name;
   }
@@ -47,6 +64,7 @@ const Player = (() => {
     video.removeAttribute('src');
     video.load();
     video.style.display = 'none';
+    bar.hidden = true;
     placeholder.innerHTML = message || defaultMessage;
     placeholder.style.display = 'block';
     document.getElementById('fileName').textContent = '';
@@ -64,6 +82,16 @@ const Player = (() => {
     video.addEventListener('pause', () => { playBtn.textContent = '▶ 再生'; });
     video.addEventListener('timeupdate', showTime);
     video.addEventListener('loadedmetadata', showTime);
+
+    // 標準の操作の代わり：動画をタップで再生・停止、再生位置のバー、全画面
+    video.addEventListener('click', togglePlay);
+    video.addEventListener('timeupdate', showSeek);
+    video.addEventListener('loadedmetadata', showSeek);
+    seek.addEventListener('input', () => { seeking = true; video.currentTime = Number(seek.value); });
+    seek.addEventListener('change', () => { seeking = false; });
+    document.getElementById('fullscreenBtn').onclick = fullscreen;
+    // ブラウザの全画面では、操作が何もないと困るので、全画面の間だけ標準の操作を出す
+    document.addEventListener('fullscreenchange', () => { video.controls = document.fullscreenElement === video; });
 
     // PC：スペースキーで再生・停止
     document.addEventListener('keydown', (e) => {
