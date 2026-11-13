@@ -51,7 +51,12 @@ main {
   border: 1px solid #ccc; border-radius: 8px; background: #fff; color: #333; cursor: pointer; }
 .backup-row input { display: none; }
 .match-row select { flex: 1; min-width: 0; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
-video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; display: none; }
+video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; display: none; cursor: pointer; }
+/* 動画のすぐ下：再生位置のバーと全画面ボタン（標準の操作の代わり） */
+.video-bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.video-bar[hidden] { display: none; }
+.video-bar input { flex: 1; min-width: 0; }
+.video-bar button { padding: 6px 10px; border: 1px solid #ccc; border-radius: 8px; background: #fff; font-size: 13px; cursor: pointer; }
 .placeholder { margin-top: 12px; padding: 40px 12px; text-align: center; color: #888; border: 2px dashed #ccc; border-radius: 8px; }
 /* 両面コートは縦に長いので、画面の高さに収まるように制限する */
 #court { width: 100%; max-width: 360px; height: 64vh; display: block; margin: 0 auto; touch-action: manipulation; }

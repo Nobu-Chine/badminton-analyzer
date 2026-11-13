@@ -34,7 +34,13 @@
       <label>記録を読み込む<input type="file" id="importInput" accept=".json,application/json"></label>
     </div>
     <div class="placeholder" id="placeholder">動画ファイルを選ぶとここで再生されます<br>（動画はサーバーに送られません）</div>
-    <video id="video" controls playsinline></video>
+    <!-- iPhone などの標準の操作（10秒送りのアイコンが重なって出る）は使わず、アプリの操作だけにする。
+         動画をタップすると再生・停止。全画面のときだけ標準の操作が出る -->
+    <video id="video" playsinline></video>
+    <div class="video-bar" id="videoBar" hidden>
+      <input type="range" id="videoSeek" min="0" max="0" step="0.1" value="0" aria-label="再生位置">
+      <button id="fullscreenBtn">⛶ 全画面</button>
+    </div>
   </section>
 
   <!-- コート図エリア（シングルス・両面。縦なら上が相手コート・下が自分コート、横なら動画と同じ向き） -->
