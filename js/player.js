@@ -111,6 +111,10 @@ const Player = (() => {
     isEnded: () => video.ended,
     pause: () => video.pause(),
     play: () => video.play(),
+    // 再生位置が変わったとき（再生中・移動したとき・動画を切り替えたとき）に呼ぶ関数を登録する
+    onTimeChange(callback) {
+      ['timeupdate', 'seeked', 'loadedmetadata'].forEach((type) => video.addEventListener(type, callback));
+    },
     // 動画が画面の上に来るまでスクロールする（スマホで一覧や集計から再生したとき、動画が見えるように）
     //   なめらかに動かす指定は、環境によって動かないことがあったので、すぐ移動する
     reveal: () => video.scrollIntoView({ block: 'start' }),

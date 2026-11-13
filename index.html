@@ -69,8 +69,10 @@
         <span>自分</span>
         <button data-me-side="left">左</button>
         <button data-me-side="right">右</button>
-        <small>コートチェンジしたら切り替え</small>
+        <small>コートチェンジの場面で押す</small>
       </div>
+      <!-- この動画のコートチェンジ（何時から自分がどちら側か）。courtView.js が描く -->
+      <div class="side-changes" id="sideChanges" hidden></div>
     </div>
     <!-- コートの線は court.js が描く -->
     <svg id="court" xmlns="http://www.w3.org/2000/svg"></svg>

@@ -72,6 +72,10 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
   color: #1f6f4a; font-size: 13px; cursor: pointer; }
 .seg button.selected { background: #1f6f4a; border-color: #1f6f4a; color: #fff; }
 .seg small { font-size: 11px; color: #999; margin-left: 2px; }
+.side-changes { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 12px; color: #777; }
+.side-changes[hidden] { display: none; }
+.side-change { display: inline-flex; align-items: center; gap: 2px; padding: 2px 6px; background: #f1f5f3; border-radius: 6px; color: #333; }
+.side-change button { border: none; background: none; color: #999; font-size: 13px; padding: 2px 4px; cursor: pointer; }
 /* 動画の切り替え */
 .clip-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .clip-nav[hidden] { display: none; }
