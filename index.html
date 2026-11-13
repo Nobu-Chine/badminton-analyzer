@@ -37,7 +37,7 @@
     <video id="video" controls playsinline></video>
   </section>
 
-  <!-- コート図エリア（シングルス・両面。上が相手コート、下が自分コート） -->
+  <!-- コート図エリア（シングルス・両面。縦なら上が相手コート・下が自分コート、横なら動画と同じ向き） -->
   <section class="card">
     <!-- 動画の切り替え（試合の動画が2本以上のときだけ出る） -->
     <div class="clip-nav" id="clipNav" hidden>
@@ -52,6 +52,20 @@
       <button id="fwdBtn">5秒 ▶</button>
     </div>
     <div class="now" id="nowTime">0:00</div>
+    <!-- コート図の向き（courtView.js）。横から撮った動画なら「横」にすると、動画と同じ向きで押せる -->
+    <div class="court-view">
+      <div class="seg">
+        <span>向き</span>
+        <button data-orientation="vertical">縦</button>
+        <button data-orientation="horizontal">横（動画と同じ）</button>
+      </div>
+      <div class="seg" id="meSideRow" hidden>
+        <span>自分</span>
+        <button data-me-side="left">左</button>
+        <button data-me-side="right">右</button>
+        <small>コートチェンジしたら切り替え</small>
+      </div>
+    </div>
     <!-- コートの線は court.js が描く -->
     <svg id="court" xmlns="http://www.w3.org/2000/svg"></svg>
     <p class="hint">動画を一時停止して、シャトルが落ちた位置をタップ<br>
@@ -143,6 +157,7 @@
 <script src="js/clips.js"></script>
 <script src="js/player.js"></script>
 <script src="js/court.js"></script>
+<script src="js/courtView.js"></script>
 <script src="js/dialog.js"></script>
 <script src="js/list.js"></script>
 <script src="js/matchPicker.js"></script>
