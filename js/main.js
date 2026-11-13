@@ -131,6 +131,8 @@ RecordFilter.init({
     if (Playlist.isPlaying()) { Playlist.stop(); return; }
     if (!Playlist.play(RecordFilter.apply(Matches.records()))) {
       alert('この場面の動画がまだ選ばれていません。「動画を選ぶ」で選んでください');
+    } else {
+      Player.reveal(); // 始めたときだけ動画まで移動（途中で一覧を見ても引き戻さない）
     }
     refresh();
   },
@@ -178,7 +180,7 @@ RecordList.init({
   isPlayable: (record) => (record.videoKey ? Clips.has(record.videoKey) : Player.hasVideo()),
   onSelect(record) {
     Playlist.stop(); // 1件を選んだら、順に再生はやめる
-    if (playRecord(record)) return;
+    if (playRecord(record)) { Player.reveal(); return; }
     // 流せなかった理由を伝える（その動画が選ばれていない／動画がない）
     const no = Matches.videoNumber(record);
     if (record.videoKey) alert((no ? '動画' + no : 'この記録の動画') + 'がまだ選ばれていません。「動画を選ぶ」で選んでください');

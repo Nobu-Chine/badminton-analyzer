@@ -82,6 +82,9 @@ const Player = (() => {
     isPaused: () => video.paused,
     isEnded: () => video.ended,
     pause: () => video.pause(),
+    // 動画が画面の上に来るまでスクロールする（スマホで一覧や集計から再生したとき、動画が見えるように）
+    //   なめらかに動かす指定は、環境によって動かないことがあったので、すぐ移動する
+    reveal: () => video.scrollIntoView({ block: 'start' }),
     currentTime: () => video.currentTime,
     seekAndPlay(time) {
       const go = () => {
