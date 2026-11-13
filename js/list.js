@@ -29,7 +29,8 @@ const RecordList = (() => {
     return text;
   }
 
-  function render(records) {
+  // activeId：「順に再生」で今流している記録の id（目立たせる）。なければ null
+  function render(records, activeId = null) {
     list.innerHTML = '';
     if (records.length === 0) {
       list.innerHTML = '<li class="empty">まだ記録はありません</li>';
@@ -41,6 +42,7 @@ const RecordList = (() => {
       const no = handlers.videoNumberOf(r);
       // 動画が選ばれていない記録は薄く表示する
       li.classList.toggle('no-video', !handlers.isPlayable(r));
+      li.classList.toggle('active', r.id === activeId);
       li.innerHTML =
         '<span class="time">' + (no ? '<span class="clip-no">動画' + no + '</span>' : '') +
           Player.formatTime(r.time) + '</span>' +

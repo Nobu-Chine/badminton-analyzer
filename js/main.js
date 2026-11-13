@@ -10,13 +10,26 @@ function saved(ok) {
 }
 
 // 記録や試合が変わったら、試合の切り替え・コートの点・一覧・集計を描き直す
+// 集計の棒で絞り込んでいるときは、コートの点と一覧はその記録だけにする
 function refresh() {
-  const records = Matches.records();
+  const shown = RecordFilter.apply(Matches.records());
+  const playing = Playlist.current();
   MatchPicker.render(Matches.list(), Matches.currentId());
   refreshVideoList();
-  Court.drawDots(records, Rules.score);
-  RecordList.render(records);
+  Court.drawDots(shown, Rules.score);
+  RecordList.render(shown, playing ? playing.id : null);
+  // 集計を「全試合」で見ていても、一覧に出せるのは今の試合の記録だけ
+  RecordFilter.render(shown.length, StatsView.scope() === 'all' ? '※この試合の分だけ表示' : '', Playlist.isPlaying());
   refreshStats();
+}
+
+// 記録の場面を流す（その動画に切り替えて、少し前から）。流せなければ false
+function playRecord(record) {
+  if (record.videoKey && !Clips.show(record.videoKey)) return false;
+  if (!Player.hasVideo()) return false;
+  // 落ちた瞬間ではなく、その少し前から流す（記録した時間そのものは変えない）
+  Player.seekAndPlay(record.time - Settings.replayLeadSeconds);
+  return true;
 }
 
 // 集計は「この試合」か「全試合」を選べる
@@ -42,6 +55,7 @@ Player.init({ isBlocked: () => RecordDialog.isOpen() });
 Clips.init({
   // 動画が選ばれたら、その動画の試合に切り替える（'add' のときは今の試合に足す）
   onFilesChosen(videos, mode) {
+    Playlist.stop();
     if (mode === 'open') {
       saved(Matches.openForVideos(videos));
       syncClips(videos[0].key);
@@ -94,9 +108,44 @@ Backup.init({
     alert('読み込みました（増えた記録：' + result.added + '件）');
   },
 });
-StatsView.init(refreshStats);
+StatsView.init({
+  onScopeChange: refresh,
+  // 集計の棒を押したら、その場面だけに絞り込んで、記録一覧を見せる
+  onSelect(choice) {
+    Playlist.stop();
+    RecordFilter.set(Stats.filterFor(choice, { zoneOf: Rules.zone }), choice.description);
+    Tabs.select('list');
+    refresh();
+    RecordFilter.reveal();
+  },
+});
+
+RecordFilter.init({
+  onClear() {
+    Playlist.stop();
+    RecordFilter.clear();
+    refresh();
+  },
+  // 絞り込んだ場面を順に再生（再生中にもう一度押すと止める）
+  onPlay() {
+    if (Playlist.isPlaying()) { Playlist.stop(); return; }
+    if (!Playlist.play(RecordFilter.apply(Matches.records()))) {
+      alert('この場面の動画がまだ選ばれていません。「動画を選ぶ」で選んでください');
+    }
+    refresh();
+  },
+});
+
+Playlist.init({
+  start: playRecord,
+  now: Player.currentTime,
+  ended: Player.isEnded,
+  pause: Player.pause,
+  onChange: refresh,
+});
 
 MatchPicker.init((id) => {
+  Playlist.stop();
   saved(Matches.select(id));
   syncClips();
   refresh();
@@ -125,15 +174,12 @@ RecordList.init({
   videoNumberOf: (record) => Matches.videoNumber(record),
   isPlayable: (record) => (record.videoKey ? Clips.has(record.videoKey) : Player.hasVideo()),
   onSelect(record) {
-    // 別の動画の記録なら、その動画に切り替える
-    if (record.videoKey && !Clips.show(record.videoKey)) {
-      const no = Matches.videoNumber(record);
-      alert((no ? '動画' + no : 'この記録の動画') + 'がまだ選ばれていません。「動画を選ぶ」で選んでください');
-      return;
-    }
-    if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
-    // 落ちた瞬間ではなく、その少し前から流す（記録した時間そのものは変えない）
-    Player.seekAndPlay(record.time - Settings.replayLeadSeconds);
+    Playlist.stop(); // 1件を選んだら、順に再生はやめる
+    if (playRecord(record)) return;
+    // 流せなかった理由を伝える（その動画が選ばれていない／動画がない）
+    const no = Matches.videoNumber(record);
+    if (record.videoKey) alert((no ? '動画' + no : 'この記録の動画') + 'がまだ選ばれていません。「動画を選ぶ」で選んでください');
+    else alert('先に動画を選んでください');
   },
   onDelete(record) {
     if (!confirm('この記録を削除しますか？')) return;
