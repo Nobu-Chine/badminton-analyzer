@@ -169,6 +169,7 @@ RecordDialog.init({
     record.videoKey = Clips.currentKey(); // どの動画の記録か
     saved(Matches.addRecord(record));
     refresh();
+    Player.reveal(); // 記録したら、すぐ次のラリーを見られるよう動画に戻る
   },
 });
 
