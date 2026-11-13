@@ -55,6 +55,18 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 .placeholder { margin-top: 12px; padding: 40px 12px; text-align: center; color: #888; border: 2px dashed #ccc; border-radius: 8px; }
 /* 両面コートは縦に長いので、画面の高さに収まるように制限する */
 #court { width: 100%; max-width: 360px; height: 64vh; display: block; margin: 0 auto; touch-action: manipulation; }
+/* 横向きは横幅いっぱいに広げて、高さは図の形に合わせる */
+#court.horizontal { max-width: none; height: auto; }
+
+/* コート図の向きの切り替え */
+.court-view { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 8px; font-size: 13px; color: #555; }
+.seg { display: flex; align-items: center; gap: 4px; }
+.seg[hidden] { display: none; }
+.seg span { margin-right: 2px; }
+.seg button { padding: 6px 10px; border: 1px solid #c9d8cf; border-radius: 8px; background: #fff;
+  color: #1f6f4a; font-size: 13px; cursor: pointer; }
+.seg button.selected { background: #1f6f4a; border-color: #1f6f4a; color: #fff; }
+.seg small { font-size: 11px; color: #999; margin-left: 2px; }
 /* 動画の切り替え */
 .clip-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .clip-nav[hidden] { display: none; }

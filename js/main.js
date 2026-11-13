@@ -151,11 +151,14 @@ MatchPicker.init((id) => {
   refresh();
 });
 
+// コート図の向き（縦／横、横のときに自分を左右どちらに置くか）。変えたらコート図を描き直す
+const courtView = CourtView.init((view) => Court.setView(view));
+
 Court.init((x, y) => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
   if (!Player.isPaused()) { alert('動画を一時停止してからタップしてください'); return; }
   RecordDialog.open(Player.currentTime(), x, y);
-});
+}, courtView);
 
 RecordDialog.init({
   missingItems: Rules.missingItems,
