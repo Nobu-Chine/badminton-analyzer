@@ -21,6 +21,16 @@ function refresh() {
   // 集計を「全試合」で見ていても、一覧に出せるのは今の試合の記録だけ
   RecordFilter.render(shown.length, StatsView.scope() === 'all' ? '※この試合の分だけ表示' : '', Playlist.isPlaying());
   refreshStats();
+  syncSide();
+}
+
+// 今の動画・今の時間で、自分が左右どちらにいるかをコート図に反映する（コートチェンジ）
+//   force：向きが変わっていなくても描き直す
+function syncSide(force = false) {
+  const key = Clips.currentKey();
+  const side = key ? Matches.sideAt(key, Player.currentTime(), CourtView.get().meSide) : CourtView.get().meSide;
+  if (CourtView.showSide(side) || force) Court.setView(CourtView.get());
+  CourtView.renderChanges(key ? Matches.sideChanges(key) : [], Player.formatTime);
 }
 
 // 記録の場面を流す（その動画に切り替えて、少し前から）。流せなければ false
@@ -153,8 +163,23 @@ MatchPicker.init((id) => {
   refresh();
 });
 
-// コート図の向き（縦／横、横のときに自分を左右どちらに置くか）。変えたらコート図を描き直す
-const courtView = CourtView.init((view) => Court.setView(view));
+// コート図の向き（縦／横、横のときに自分を左右どちらに置くか）
+const courtView = CourtView.init({
+  onOrientation: (view) => Court.setView(view),
+  // 「自分：左／右」を押したら、今の動画の今の時間をコートチェンジとして覚える
+  onSidePressed(side) {
+    const key = Clips.currentKey();
+    if (key) saved(Matches.setSide(key, Player.currentTime(), side));
+    else CourtView.showSide(side); // 動画がないときは、向きを変えるだけ
+    syncSide(true);
+  },
+  onRemoveChange(index) {
+    saved(Matches.removeSideChange(Clips.currentKey(), index));
+    syncSide(true);
+  },
+});
+// 再生位置が変わったら、その時間の向きに合わせる（巻き戻したときも自動で戻る）
+Player.onTimeChange(() => syncSide());
 
 Court.init((x, y) => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }

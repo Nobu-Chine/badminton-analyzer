@@ -55,6 +55,22 @@ const Matches = (() => {
     m.name = m.videos[0].name + (m.videos.length > 1 ? ' ほか' + (m.videos.length - 1) + '本' : '');
   }
 
+  // 今の試合の、その動画の情報（なければ null）
+  function videoOf(key) {
+    const m = current();
+    return m ? m.videos.find((v) => v.key === key) || null : null;
+  }
+
+  // コートチェンジの点を時間順に並べ、前と同じ向きの点（意味のない点）を除く
+  function withoutRepeats(points) {
+    const sorted = points.slice().sort((a, b) => a.time - b.time);
+    const result = [];
+    sorted.forEach((p) => {
+      if (result.length === 0 || result[result.length - 1].side !== p.side) result.push(p);
+    });
+    return result;
+  }
+
   // その動画が入っている試合（どこにも入っていなければ null）
   function matchOfVideo(key) {
     return data.matches.find((m) => m.videos.some((v) => v.key === key)) || null;
@@ -193,6 +209,61 @@ const Matches = (() => {
       } else {
         renameIfAuto(m);
       }
+      return save();
+    },
+
+    // ===== コートチェンジ：自分が画面の左右どちらにいるかを、動画の時間ごとに持つ =====
+    // 動画ごとに sides: [{ time, side }]（時間順、side は 'left' か 'right'）。
+    // 「その時間から、自分はこちら側」という意味。向きが変わらない点は持たない。
+
+    // その動画のその時間に、自分が左右どちらにいるか
+    //   この動画に設定がなければ、前の動画の最後の向きを引き継ぐ（ラリーごとの動画のため）
+    //   どこにも設定がなければ fallback
+    sideAt(key, time, fallback) {
+      const m = current();
+      const i = m ? m.videos.findIndex((v) => v.key === key) : -1;
+      if (i < 0) return fallback;
+      const points = m.videos[i].sides || [];
+      if (points.length > 0) {
+        const hit = points.filter((p) => p.time <= time + 0.05).pop();
+        return (hit || points[0]).side;
+      }
+      for (let j = i - 1; j >= 0; j--) {
+        const prev = m.videos[j].sides || [];
+        if (prev.length > 0) return prev[prev.length - 1].side;
+      }
+      return fallback;
+    },
+
+    // その時間から、自分は side 側（コートチェンジ）
+    //   1秒以内にある設定は置き換える
+    //   初めて押したのが動画の途中なら、それより前は反対側だったとみなす（コートチェンジで押したと考える）
+    setSide(key, time, side) {
+      const v = videoOf(key);
+      if (!v) return save();
+      let points = (v.sides || []).filter((p) => Math.abs(p.time - time) > 1);
+      if (points.length === 0) {
+        if (time <= 2) time = 0;
+        else points.push({ time: 0, side: side === 'left' ? 'right' : 'left' });
+      }
+      points.push({ time, side });
+      v.sides = withoutRepeats(points);
+      return save();
+    },
+
+    // その動画のコートチェンジの一覧（時間順）
+    sideChanges(key) {
+      const v = videoOf(key);
+      return v && v.sides ? v.sides.map((p) => ({ time: p.time, side: p.side })) : [];
+    },
+
+    // コートチェンジを1つ消す（index は sideChanges の並びの番号）
+    removeSideChange(key, index) {
+      const v = videoOf(key);
+      if (!v || !v.sides) return save();
+      const points = v.sides.slice();
+      points.splice(index, 1);
+      v.sides = withoutRepeats(points);
       return save();
     },
 
