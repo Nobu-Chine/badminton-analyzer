@@ -7,6 +7,7 @@ const RecordDialog = (() => {
   // 見直し中に画面の下に出す「記録の続きに戻る」バー
   const resumeBar = document.getElementById('resumeBar');
   const resumeBtn = document.getElementById('resumeBtn');
+  const memoInput = document.getElementById('memoInput');
   let draft = null; // 入力中の記録（見直し中も残す）
   let rules = null;
 
@@ -59,6 +60,7 @@ const RecordDialog = (() => {
   function show() {
     resumeBar.hidden = true;
     document.getElementById('dlgTime').textContent = '動画の時間：' + Player.formatTime(draft.time);
+    memoInput.value = draft.memo || '';
     renderChoices();
     dialog.showModal();
     // 開いた瞬間に最初のボタンへ枠が付き、選択済みに見えるのを防ぐ
@@ -79,6 +81,8 @@ const RecordDialog = (() => {
       onReview();
     };
     resumeBtn.onclick = show;
+    // メモは書くたびに入力中の記録へ入れる（見直しで閉じても残る）
+    memoInput.addEventListener('input', () => { if (draft) draft.memo = memoInput.value; });
     document.getElementById('resumeDiscardBtn').onclick = () => {
       if (confirm('入力中の記録をやめますか？')) discard();
     };
@@ -89,6 +93,8 @@ const RecordDialog = (() => {
         return;
       }
       const record = draft;
+      // メモは前後の空白を消し、空なら持たない
+      record.memo = (record.memo || '').trim() || null;
       dialog.close();
       discard();
       onSave(record);
@@ -104,7 +110,7 @@ const RecordDialog = (() => {
       return;
     }
     draft = Object.assign({ time, x, y, player: null, shot: null, course: null, outcome: null,
-              winType: null, missType: null, cause: null, setupShot: null }, extra);
+              winType: null, missType: null, cause: null, setupShot: null, memo: null }, extra);
     dlgError.textContent = '';
     show();
     dialog.scrollTop = 0;

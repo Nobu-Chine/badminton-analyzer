@@ -52,7 +52,15 @@ const RecordList = (() => {
         '<span class="tag ' + (score === '得点' ? 'point' : 'miss') + '">' + score + '</span>' +
         '<span class="rec-text"></span>' +
         '<button class="del-btn" title="削除">✕</button>';
-      li.querySelector('.rec-text').textContent = describe(r);
+      const text = li.querySelector('.rec-text');
+      text.textContent = describe(r);
+      // メモがあれば、その記録の下に小さく出す
+      if (r.memo) {
+        const memo = document.createElement('span');
+        memo.className = 'rec-memo';
+        memo.textContent = 'メモ：' + r.memo;
+        text.appendChild(memo);
+      }
 
       li.onclick = () => handlers.onSelect(r);
       // 削除（一覧の移動処理が動かないように止める）

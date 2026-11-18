@@ -177,6 +177,10 @@ button.stats-row { -webkit-tap-highlight-color: rgba(31, 111, 74, .25); }
 .stats-bar.miss { background: #d9443b; }
 .stats-count { text-align: right; font-variant-numeric: tabular-nums; color: #333; }
 .rec-text { flex: 1; font-size: 14px; }
+.rec-memo { display: block; margin-top: 2px; font-size: 12px; color: #6b5b2e; }
+/* 動画の下：今流れている場面のメモ */
+.scene-memo { margin-top: 6px; padding: 6px 10px; background: #fff8e1; border-radius: 8px; font-size: 13px; color: #5c4a14; }
+.scene-memo[hidden] { display: none; }
 .del-btn { border: none; background: none; color: #999; font-size: 18px; cursor: pointer; padding: 4px 8px; }
 .empty { color: #888; font-size: 14px; padding: 8px 4px; }
 
@@ -212,6 +216,8 @@ dialog h3 { margin: 0 0 4px; font-size: 16px; }
 #resumeDiscardBtn { opacity: .8; }
 #saveBtn { background: #1f6f4a; color: #fff; }
 #saveBtn.incomplete { background: #aaa; }
+/* メモ欄（スマホで拡大されないよう 16px） */
+#memoInput { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; font-family: inherit; resize: vertical; }
 #dlgError { color: #d9443b; font-size: 13px; margin: 0 0 4px; min-height: 1em; }
 
 /* スマホ・タブレット：「記録の続きに戻る」は、画面下に固定した再生の列の上に出す
