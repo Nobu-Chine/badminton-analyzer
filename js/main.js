@@ -22,6 +22,15 @@ function refresh() {
   RecordFilter.render(shown.length, StatsView.scope() === 'all' ? '※この試合の分だけ表示' : '', Playlist.isPlaying());
   refreshStats();
   syncSide();
+  syncMemo();
+}
+
+// 今流れている場面の記録にメモがあれば、動画の下に出す
+function syncMemo() {
+  const key = Clips.currentKey();
+  // 動画を記録していない古い記録は、今の動画の記録として扱う
+  const records = Matches.records().filter((r) => !r.videoKey || r.videoKey === key);
+  SceneMemo.render(Player.hasVideo() ? records : [], Player.currentTime());
 }
 
 // 今の動画・今の時間で、自分が左右どちらにいるかをコート図に反映する（コートチェンジ）
@@ -183,7 +192,7 @@ const courtView = CourtView.init({
   },
 });
 // 再生位置が変わったら、その時間の向きに合わせる（巻き戻したときも自動で戻る）
-Player.onTimeChange(() => syncSide());
+Player.onTimeChange(() => { syncSide(); syncMemo(); });
 
 Court.init((x, y) => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }

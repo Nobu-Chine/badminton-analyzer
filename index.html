@@ -41,6 +41,8 @@
       <input type="range" id="videoSeek" min="0" max="0" step="0.1" value="0" aria-label="再生位置">
       <button id="fullscreenBtn">⛶ 全画面</button>
     </div>
+    <!-- 今流れている場面の記録にメモがあれば出す（sceneMemo.js） -->
+    <div class="scene-memo" id="sceneMemo" hidden></div>
   </section>
 
   <!-- コート図エリア（シングルス・両面。縦なら上が相手コート・下が自分コート、横なら動画と同じ向き） -->
@@ -162,6 +164,10 @@
     <div class="group-label">甘かった球<small>（自分が上げた球）</small></div>
     <div class="choices" data-key="setupShot"></div>
   </div>
+  <div class="group">
+    <div class="group-label">メモ<small>（選択肢にないことなど。書かなくてもいい）</small></div>
+    <textarea id="memoInput" rows="2" maxlength="200" placeholder="例：ロブが浅かった"></textarea>
+  </div>
   <p id="dlgError"></p>
   <div class="dlg-actions">
     <button id="cancelBtn">やめる</button>
@@ -188,6 +194,7 @@
 <script src="js/court.js"></script>
 <script src="js/courtView.js"></script>
 <script src="js/dialog.js"></script>
+<script src="js/sceneMemo.js"></script>
 <script src="js/list.js"></script>
 <script src="js/matchPicker.js"></script>
 <script src="js/videoList.js"></script>
