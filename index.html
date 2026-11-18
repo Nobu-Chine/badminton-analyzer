@@ -51,21 +51,24 @@
       <span id="clipLabel"></span>
       <button id="nextClipBtn">次の動画 ▶</button>
     </div>
-    <!-- 再生操作（コートのすぐ上に置いて、指の移動を少なくする） -->
-    <div class="controls">
-      <button id="backBtn">◀ 5秒</button>
-      <button id="playBtn">▶ 再生</button>
-      <button id="fwdBtn">5秒 ▶</button>
-    </div>
-    <div class="now" id="nowTime">0:00</div>
-    <!-- 細かく確認するための操作（playbackTools.js）：速さ、前後数秒だけ動かすバー、1コマ送り -->
-    <div class="fine-tools">
+    <!-- よく使う再生操作。スマホでは画面の下に固定する（コートのすぐ上に置いて、指の移動を少なくする） -->
+    <div class="dock">
+      <div class="controls">
+        <button id="backBtn">◀ 5秒</button>
+        <button id="playBtn">▶ 再生</button>
+        <button id="fwdBtn">5秒 ▶</button>
+      </div>
+      <!-- 1コマ送りと、前後数秒だけ動かすバー（playbackTools.js） -->
       <div class="fine-row">
         <button id="framePrevBtn" aria-label="1コマ戻る">◀ 1コマ</button>
         <input type="range" id="fineSeek" aria-label="今の位置の前後を細かく動かす">
         <button id="frameNextBtn" aria-label="1コマ進む">1コマ ▶</button>
       </div>
       <div class="fine-note" id="fineNote"></div>
+    </div>
+    <div class="now" id="nowTime">0:00</div>
+    <!-- 速さ（playbackTools.js）。あまり切り替えないので固定しない -->
+    <div class="fine-tools">
       <div class="rate-row" id="rateRow"><span>速さ</span></div>
     </div>
     <!-- コート図の向き（courtView.js）。横から撮った動画なら「横」にすると、動画と同じ向きで押せる -->

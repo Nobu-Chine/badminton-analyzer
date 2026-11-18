@@ -90,22 +90,24 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 }
 .controls #playBtn { flex: 1.4; background: #1f6f4a; color: #fff; }
 /* スマホ・タブレット：再生の列を画面の下に固定（縦長の動画でも、コート図を見ながらでも押せる）
-   PC は動画の横に並ぶので固定しない */
+   PC は動画の横に並ぶので固定しない。1コマ送りも一緒に固定する */
+/* 画面の下に固定する部分の高さ（ページ下の余白と「記録の続きに戻る」の位置に使う） */
+:root { --dock-h: 124px; }
 @media (max-width: 899px) {
-  .controls { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
-    padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96);
+  .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
+    padding: 8px 12px calc(4px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96);
     box-shadow: 0 -2px 10px rgba(0,0,0,.12); }
-  /* 固定した列の分だけ、ページの下に余白をあけて最後まで見えるようにする */
-  body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  /* 固定した部分の分だけ、ページの下に余白をあけて最後まで見えるようにする */
+  body { padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom)); }
 }
 .now { text-align: center; font-size: 13px; color: #666; margin: 6px 0 8px; font-variant-numeric: tabular-nums; }
 /* 細かく確認するための操作 */
 .fine-tools { margin: 0 0 10px; padding: 8px; background: #f6f8f7; border-radius: 10px; }
-.rate-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; color: #555; }
+.rate-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #555; }
 .rate-row button { flex: 1; padding: 7px 0; border: 1px solid #cfd8d3; border-radius: 8px; background: #fff;
   color: #1f6f4a; font-size: 14px; cursor: pointer; }
 .rate-row button.selected { background: #1f6f4a; border-color: #1f6f4a; color: #fff; }
-.fine-row { display: flex; align-items: center; gap: 6px; }
+.fine-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
 .fine-row input { flex: 1; min-width: 0; }
 .fine-row button { padding: 7px 8px; border: 1px solid #cfd8d3; border-radius: 8px; background: #fff;
   color: #1f6f4a; font-size: 13px; white-space: nowrap; cursor: pointer; }
@@ -215,5 +217,5 @@ dialog h3 { margin: 0 0 4px; font-size: 16px; }
 /* スマホ・タブレット：「記録の続きに戻る」は、画面下に固定した再生の列の上に出す
    （.resume-bar の指定より後ろに書かないと上書きされるので、ファイルの最後に置く） */
 @media (max-width: 899px) {
-  .resume-bar { bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .resume-bar { bottom: calc(var(--dock-h) + env(safe-area-inset-bottom)); }
 }
