@@ -104,7 +104,7 @@ const RecordDialog = (() => {
       return;
     }
     draft = Object.assign({ time, x, y, player: null, shot: null, course: null, outcome: null,
-              winType: null, missType: null, setup: null, setupShot: null }, extra);
+              winType: null, missType: null, cause: null, setupShot: null }, extra);
     dlgError.textContent = '';
     show();
     dialog.scrollTop = 0;

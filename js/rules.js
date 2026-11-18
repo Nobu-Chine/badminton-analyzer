@@ -29,19 +29,26 @@ const Rules = (() => {
     return '中盤';
   }
 
+  // 失点の記録か（誰が・どうなった が両方選ばれていて、失点になるとき）
+  function isLoss(record) {
+    return !!record.player && !!record.outcome && score(record) === '失点';
+  }
+
   // 今の入力内容では使わない項目（入力画面では隠して、値も消す）
-  //   決まり方・きっかけ：「決まった」のときだけ
+  //   決まり方：「決まった」のときだけ
   //   ミスの種類：「ミス」のときだけ
-  //   甘かった球：「前の球が甘かった」を選んだときだけ
+  //   原因：失点のときだけ
+  //   甘かった球：原因で「甘い球を上げた」を選んだときだけ
   function inactiveKeys(draft) {
     const keys = [];
-    if (draft.outcome !== '決まった') keys.push('winType', 'setup');
+    if (draft.outcome !== '決まった') keys.push('winType');
     if (draft.outcome !== 'ミス') keys.push('missType');
-    if (draft.outcome !== '決まった' || !draft.setup) keys.push('setupShot');
+    if (!isLoss(draft)) keys.push('cause');
+    if (!isLoss(draft) || draft.cause !== '甘い球を上げた') keys.push('setupShot');
     return keys;
   }
 
-  // まだ選ばれていない必須項目の名前を返す（コース・決まり方・きっかけは選ばなくてもいい）
+  // まだ選ばれていない必須項目の名前を返す（コース・決まり方は選ばなくてもいい）
   function missingItems(draft) {
     const inactive = inactiveKeys(draft);
     const list = [];
@@ -49,6 +56,7 @@ const Rules = (() => {
     if (!draft.shot) list.push('ショットの種類');
     if (!draft.outcome) list.push('どうなった');
     if (!inactive.includes('missType') && !draft.missType) list.push('ミスの種類');
+    if (!inactive.includes('cause') && !draft.cause) list.push('失点の原因');
     if (!inactive.includes('setupShot') && !draft.setupShot) list.push('甘かった球');
     return list;
   }
@@ -85,8 +93,16 @@ const Rules = (() => {
         missType: null,
       });
     }
+
+    // 3. 「きっかけ：前の球が甘かった」の形 → 失点なら原因「甘い球を上げた」に変える
+    //    （得点の記録は原因を付けないので、きっかけだけ消す。甘かった球は一覧の文に残す）
+    if ('setup' in r) {
+      r = Object.assign({}, r);
+      if (score(r) === '失点' && (r.setup || r.setupShot)) r.cause = '甘い球を上げた';
+      delete r.setup;
+    }
     return r;
   }
 
-  return { score, setupBy, zone, inactiveKeys, missingItems, upgrade };
+  return { score, setupBy, zone, isLoss, inactiveKeys, missingItems, upgrade };
 })();

@@ -16,6 +16,7 @@ const RecordList = (() => {
   // 例：「自分 クリア（ストレート） バックアウト」
   //     「相手 ドロップ 決まった（ネット前・取れなかった）」
   //     「相手 プッシュ 決まった（ネット前） ← 自分のピンが甘い」
+  //     「自分 クリア バックアウト［原因：動きが遅れた］」
   function describe(r) {
     let text = r.player + ' ' + r.shot;
     if (r.course) text += '（' + r.course + '）';
@@ -26,6 +27,8 @@ const RecordList = (() => {
       text += ' 決まった' + (detail.length ? '（' + detail.join('・') + '）' : '');
     }
     if (r.setupShot) text += ' ← ' + handlers.setupByOf(r) + 'の' + r.setupShot + 'が甘い';
+    // 失点の原因（「甘い球を上げた」は上の文で分かるので出さない）
+    if (r.cause && r.cause !== '甘い球を上げた') text += '［原因：' + r.cause + '］';
     return text;
   }
 

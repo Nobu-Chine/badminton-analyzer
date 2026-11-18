@@ -8,22 +8,26 @@ const Stats = (() => {
     zone: '落ちた場所',
     winType: '決まり方',
     setupShot: '甘かった球',
+    cause: '原因',
   };
+
+  // 失点かどうか（自分のミス、または相手に決められた）
+  const isLoss = (r) => (r.player === '自分') !== (r.outcome === '決まった');
 
   // 集計の区切り。kind は '得点' か '失点'（色分けに使う）
   const SECTIONS = [
+    // いちばん知りたいこと：なぜ失点したか
+    { title: '失点の原因', kind: '失点', match: isLoss, by: ['cause'] },
     { title: '失点：自分のミス', kind: '失点',
       match: (r) => r.player === '自分' && r.outcome === 'ミス', by: ['missType', 'shot'] },
     { title: '失点：相手に決められた', kind: '失点',
       match: (r) => r.player === '相手' && r.outcome === '決まった', by: ['zone', 'shot', 'winType'] },
-    { title: '失点：自分の甘い球を決められた', kind: '失点',
-      match: (r) => r.player === '相手' && r.outcome === '決まった' && r.setupShot, by: ['setupShot'] },
+    { title: '失点：甘い球を上げた', kind: '失点',
+      match: (r) => isLoss(r) && r.cause === '甘い球を上げた', by: ['setupShot'] },
     { title: '得点：自分が決めた', kind: '得点',
       match: (r) => r.player === '自分' && r.outcome === '決まった', by: ['shot', 'zone'] },
     { title: '得点：相手のミス', kind: '得点',
       match: (r) => r.player === '相手' && r.outcome === 'ミス', by: ['missType', 'shot'] },
-    { title: '得点：相手の甘い球を決めた', kind: '得点',
-      match: (r) => r.player === '自分' && r.outcome === '決まった' && r.setupShot, by: ['setupShot'] },
   ];
 
   const NONE = '（未選択）';
