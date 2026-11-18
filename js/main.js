@@ -84,6 +84,9 @@ Clips.init({
     }
   },
   onChange(file) {
+    // 記録の途中で別の動画に切り替えたら、途中の記録は捨てる（違う動画に保存しないため）
+    const draftKey = RecordDialog.draftVideoKey();
+    if (draftKey && draftKey !== Clips.currentKey()) RecordDialog.discard();
     refreshVideoList();
     if (file) { Player.load(file); return; }
     // この試合の動画がまだ選ばれていないときは、選び直しを案内する
@@ -184,20 +187,23 @@ Player.onTimeChange(() => syncSide());
 Court.init((x, y) => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
   if (!Player.isPaused()) { alert('動画を一時停止してからタップしてください'); return; }
-  RecordDialog.open(Player.currentTime(), x, y);
+  RecordDialog.open(Player.currentTime(), x, y, { videoKey: Clips.currentKey() });
 }, courtView);
 
 RecordDialog.init({
   missingItems: Rules.missingItems,
   inactiveKeys: Rules.inactiveKeys,
   onSave(record) {
-    record.videoKey = Clips.currentKey(); // どの動画の記録か
+    // どの動画の記録か（コートをタップしたときの動画。open で入れてある）
+    record.videoKey = record.videoKey || Clips.currentKey();
     saved(Matches.addRecord(record));
     refresh();
     // 記録したら、動画に戻って続きを再生する（次のラリーをすぐ見られるように）
     Player.reveal();
     Player.play();
   },
+  // 「動画を見直す」：入力は残したまま、動画が見える所まで動かす
+  onReview: () => Player.reveal(),
 });
 
 RecordList.init({

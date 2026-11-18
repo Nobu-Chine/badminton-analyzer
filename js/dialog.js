@@ -4,7 +4,10 @@ const RecordDialog = (() => {
   const dialog = document.getElementById('dialog');
   const saveBtn = document.getElementById('saveBtn');
   const dlgError = document.getElementById('dlgError');
-  let draft = null; // 入力中の記録
+  // 見直し中に画面の下に出す「記録の続きに戻る」バー
+  const resumeBar = document.getElementById('resumeBar');
+  const resumeBtn = document.getElementById('resumeBtn');
+  let draft = null; // 入力中の記録（見直し中も残す）
   let rules = null;
 
   // 今の入力内容で使わない項目は、値を消す
@@ -46,33 +49,70 @@ const RecordDialog = (() => {
     if (missing.length === 0) dlgError.textContent = '';
   }
 
+  // 入力途中の記録を捨てる（やめる・保存のあと、別の動画に切り替えたときなど）
+  function discard() {
+    draft = null;
+    resumeBar.hidden = true;
+  }
+
+  // 入力途中の内容で、記録画面を開き直す
+  function show() {
+    resumeBar.hidden = true;
+    document.getElementById('dlgTime').textContent = '動画の時間：' + Player.formatTime(draft.time);
+    renderChoices();
+    dialog.showModal();
+    // 開いた瞬間に最初のボタンへ枠が付き、選択済みに見えるのを防ぐ
+    document.activeElement.blur();
+  }
+
   // onSave(record)：保存ボタンで、入力済みの記録を受け取る
+  // onReview()：「動画を見直す」で記録画面を閉じたとき（動画を見える所に出すため）
   // missingItems(draft)：足りない項目名の配列を返す / inactiveKeys(draft)：今は使わない項目の配列を返す
-  function init({ onSave, missingItems, inactiveKeys }) {
+  function init({ onSave, onReview, missingItems, inactiveKeys }) {
     rules = { missingItems, inactiveKeys };
-    document.getElementById('cancelBtn').onclick = () => dialog.close();
+    document.getElementById('cancelBtn').onclick = () => { dialog.close(); discard(); };
+    // 入力を残したまま閉じて、動画を見直せるようにする
+    document.getElementById('reviewBtn').onclick = () => {
+      dialog.close();
+      resumeBtn.textContent = '記録の続きに戻る（' + Player.formatTime(draft.time) + '）';
+      resumeBar.hidden = false;
+      onReview();
+    };
+    resumeBtn.onclick = show;
+    document.getElementById('resumeDiscardBtn').onclick = () => {
+      if (confirm('入力中の記録をやめますか？')) discard();
+    };
     saveBtn.onclick = () => {
       const missing = rules.missingItems(draft);
       if (missing.length > 0) {
         dlgError.textContent = missing.join('・') + ' を選んでください';
         return;
       }
+      const record = draft;
       dialog.close();
-      onSave(draft);
+      discard();
+      onSave(record);
     };
   }
 
-  function open(time, x, y) {
-    draft = { time, x, y, player: null, shot: null, course: null, outcome: null,
-              winType: null, missType: null, setup: null, setupShot: null };
-    document.getElementById('dlgTime').textContent = '動画の時間：' + Player.formatTime(time);
+  // extra：記録に一緒に入れておく値（どの動画の記録か など）
+  function open(time, x, y, extra) {
+    // 見直し中にコートをタップしたら、入力はそのままで位置だけ置き直す
+    if (draft) {
+      Object.assign(draft, { x, y });
+      show();
+      return;
+    }
+    draft = Object.assign({ time, x, y, player: null, shot: null, course: null, outcome: null,
+              winType: null, missType: null, setup: null, setupShot: null }, extra);
     dlgError.textContent = '';
-    renderChoices();
-    dialog.showModal();
+    show();
     dialog.scrollTop = 0;
-    // 開いた瞬間に最初のボタンへ枠が付き、選択済みに見えるのを防ぐ
-    document.activeElement.blur();
   }
 
-  return { init, open, isOpen: () => dialog.open };
+  return {
+    init, open, discard,
+    isOpen: () => dialog.open,
+    draftVideoKey: () => (draft ? draft.videoKey : null), // 見直し中の記録の動画（なければ null）
+  };
 })();
