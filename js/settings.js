@@ -16,4 +16,9 @@ const Settings = {
   //   ネット前：ネットからショートサービスラインまで
   //   コート奥：後ろの 1/4
   backZoneRatio: 0.25,
+
+  // 細かく確認するための再生操作（playbackTools.js）
+  playbackRates: [1, 0.5, 0.25], // 速度の選択肢（1 が普通の速さ）
+  fineSeekSeconds: 3,            // 細かいバーで動かせる幅（今の位置の前後 何秒）
+  frameSeconds: 1 / 30,          // 「1コマ」で進む・戻る秒数（30コマ/秒の動画で1コマ）
 };

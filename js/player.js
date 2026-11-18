@@ -82,6 +82,8 @@ const Player = (() => {
     video.addEventListener('pause', () => { playBtn.textContent = '▶ 再生'; });
     video.addEventListener('timeupdate', showTime);
     video.addEventListener('loadedmetadata', showTime);
+    // 動画を切り替えると速さが 1倍 に戻るブラウザがあるので、選んだ速さに合わせ直す
+    video.addEventListener('loadedmetadata', () => { video.playbackRate = video.defaultPlaybackRate; });
 
     // 標準の操作の代わり：動画をタップで再生・停止、再生位置のバー、全画面
     video.addEventListener('click', togglePlay);
@@ -119,6 +121,17 @@ const Player = (() => {
     //   なめらかに動かす指定は、環境によって動かないことがあったので、すぐ移動する
     reveal: () => video.scrollIntoView({ block: 'start' }),
     currentTime: () => video.currentTime,
+    duration: () => video.duration || 0,
+    // 指定の時間へ移動する（動画の長さの範囲におさめる）
+    seekTo(time) {
+      if (!hasVideo()) return;
+      video.currentTime = Math.min(Math.max(0, time), video.duration || 0);
+    },
+    // 再生の速さ。動画を切り替えても同じ速さのままにする（defaultPlaybackRate）
+    setRate(rate) {
+      video.defaultPlaybackRate = rate;
+      video.playbackRate = rate;
+    },
     seekAndPlay(time) {
       const go = () => {
         video.currentTime = Math.max(0, time);
