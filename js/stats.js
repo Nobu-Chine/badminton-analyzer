@@ -15,19 +15,20 @@ const Stats = (() => {
   const isLoss = (r) => (r.player === '自分') !== (r.outcome === '決まった');
 
   // 集計の区切り。kind は '得点' か '失点'（色分けに使う）
+  // by の並びが画面の並び。そろえるため、どの区切りも「ショット」を先に置く
   const SECTIONS = [
     // いちばん知りたいこと：なぜ失点したか
     { title: '失点の原因', kind: '失点', match: isLoss, by: ['cause'] },
     { title: '失点：自分のミス', kind: '失点',
-      match: (r) => r.player === '自分' && r.outcome === 'ミス', by: ['missType', 'shot'] },
+      match: (r) => r.player === '自分' && r.outcome === 'ミス', by: ['shot', 'missType'] },
     { title: '失点：相手に決められた', kind: '失点',
-      match: (r) => r.player === '相手' && r.outcome === '決まった', by: ['zone', 'shot', 'winType'] },
+      match: (r) => r.player === '相手' && r.outcome === '決まった', by: ['shot', 'zone', 'winType'] },
     { title: '失点：甘い球を上げた', kind: '失点',
       match: (r) => isLoss(r) && r.cause === '甘い球を上げた', by: ['setupShot'] },
     { title: '得点：自分が決めた', kind: '得点',
       match: (r) => r.player === '自分' && r.outcome === '決まった', by: ['shot', 'zone'] },
     { title: '得点：相手のミス', kind: '得点',
-      match: (r) => r.player === '相手' && r.outcome === 'ミス', by: ['missType', 'shot'] },
+      match: (r) => r.player === '相手' && r.outcome === 'ミス', by: ['shot', 'missType'] },
   ];
 
   const NONE = '（未選択）';
