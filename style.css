@@ -51,9 +51,7 @@ main {
   border: 1px solid #ccc; border-radius: 8px; background: #fff; color: #333; cursor: pointer; }
 .backup-row input { display: none; }
 .match-row select { flex: 1; min-width: 0; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
-/* 縦長の動画でも再生ボタンまで1画面に収まるよう、高さは画面の45%まで（はみ出す分は左右に黒帯） */
-video { width: 100%; max-height: 45vh; max-height: 45svh; object-fit: contain;
-  margin-top: 12px; background: #000; border-radius: 8px; display: none; cursor: pointer; }
+video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; display: none; cursor: pointer; }
 /* 動画のすぐ下：再生位置のバーと全画面ボタン（標準の操作の代わり） */
 .video-bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
 .video-bar[hidden] { display: none; }
@@ -91,14 +89,23 @@ video { width: 100%; max-height: 45vh; max-height: 45svh; object-fit: contain;
   background: #e3ece7; color: #1f6f4a; font-size: 15px; font-weight: bold; cursor: pointer;
 }
 .controls #playBtn { flex: 1.4; background: #1f6f4a; color: #fff; }
+/* スマホ・タブレット：再生の列を画面の下に固定（縦長の動画でも、コート図を見ながらでも押せる）
+   PC は動画の横に並ぶので固定しない */
+@media (max-width: 899px) {
+  .controls { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96);
+    box-shadow: 0 -2px 10px rgba(0,0,0,.12); }
+  /* 固定した列の分だけ、ページの下に余白をあけて最後まで見えるようにする */
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+}
 .now { text-align: center; font-size: 13px; color: #666; margin: 6px 0 8px; font-variant-numeric: tabular-nums; }
 /* 細かく確認するための操作 */
 .fine-tools { margin: 0 0 10px; padding: 8px; background: #f6f8f7; border-radius: 10px; }
-.rate-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #555; }
+.rate-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; color: #555; }
 .rate-row button { flex: 1; padding: 7px 0; border: 1px solid #cfd8d3; border-radius: 8px; background: #fff;
   color: #1f6f4a; font-size: 14px; cursor: pointer; }
 .rate-row button.selected { background: #1f6f4a; border-color: #1f6f4a; color: #fff; }
-.fine-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.fine-row { display: flex; align-items: center; gap: 6px; }
 .fine-row input { flex: 1; min-width: 0; }
 .fine-row button { padding: 7px 8px; border: 1px solid #cfd8d3; border-radius: 8px; background: #fff;
   color: #1f6f4a; font-size: 13px; white-space: nowrap; cursor: pointer; }
@@ -204,3 +211,9 @@ dialog h3 { margin: 0 0 4px; font-size: 16px; }
 #saveBtn { background: #1f6f4a; color: #fff; }
 #saveBtn.incomplete { background: #aaa; }
 #dlgError { color: #d9443b; font-size: 13px; margin: 0 0 4px; min-height: 1em; }
+
+/* スマホ・タブレット：「記録の続きに戻る」は、画面下に固定した再生の列の上に出す
+   （.resume-bar の指定より後ろに書かないと上書きされるので、ファイルの最後に置く） */
+@media (max-width: 899px) {
+  .resume-bar { bottom: calc(76px + env(safe-area-inset-bottom)); }
+}
