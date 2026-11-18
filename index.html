@@ -58,6 +58,16 @@
       <button id="fwdBtn">5秒 ▶</button>
     </div>
     <div class="now" id="nowTime">0:00</div>
+    <!-- 細かく確認するための操作（playbackTools.js）：速さ、前後数秒だけ動かすバー、1コマ送り -->
+    <div class="fine-tools">
+      <div class="rate-row" id="rateRow"><span>速さ</span></div>
+      <div class="fine-row">
+        <button id="framePrevBtn" aria-label="1コマ戻る">◀ 1コマ</button>
+        <input type="range" id="fineSeek" aria-label="今の位置の前後を細かく動かす">
+        <button id="frameNextBtn" aria-label="1コマ進む">1コマ ▶</button>
+      </div>
+      <div class="fine-note" id="fineNote"></div>
+    </div>
     <!-- コート図の向き（courtView.js）。横から撮った動画なら「横」にすると、動画と同じ向きで押せる -->
     <div class="court-view">
       <div class="seg">
@@ -171,6 +181,7 @@
 <script src="js/matches.js"></script>
 <script src="js/clips.js"></script>
 <script src="js/player.js"></script>
+<script src="js/playbackTools.js"></script>
 <script src="js/court.js"></script>
 <script src="js/courtView.js"></script>
 <script src="js/dialog.js"></script>

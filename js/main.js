@@ -61,6 +61,7 @@ function syncClips(preferKey) {
 saved(Matches.init(Rules.upgrade));
 
 Player.init({ isBlocked: () => RecordDialog.isOpen() });
+PlaybackTools.init(); // 速さ・細かいバー・1コマ送り
 
 Clips.init({
   // 動画が選ばれたら、その動画の試合に切り替える（'add' のときは今の試合に足す）
