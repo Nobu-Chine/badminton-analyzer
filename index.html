@@ -152,9 +152,16 @@
   <p id="dlgError"></p>
   <div class="dlg-actions">
     <button id="cancelBtn">やめる</button>
+    <button id="reviewBtn">動画を見直す</button>
     <button id="saveBtn">保存</button>
   </div>
 </dialog>
+
+<!-- 記録の途中で動画を見直している間だけ出す（入力した内容は残っている） -->
+<div class="resume-bar" id="resumeBar" hidden>
+  <button id="resumeBtn">記録の続きに戻る</button>
+  <button id="resumeDiscardBtn" aria-label="記録をやめる">✕</button>
+</div>
 
 <!-- 読み込む順番に意味がある：部品を先に、つなぐ main.js を最後に -->
 <script src="js/settings.js"></script>
