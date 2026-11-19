@@ -215,6 +215,35 @@ RallyNav.init({
     saved(Matches.removeRallyStart(Clips.currentKey(), index));
     syncRally();
   },
+  // 打球音からラリーを見つけて、始まりに印を付ける（すでにある印の近くには足さない）
+  onAuto() {
+    const key = Clips.currentKey();
+    const url = Player.sourceUrl();
+    if (!key || !url) return;
+    const opt = Settings.rallyDetect;
+    RallyNav.showScan('解析中 0%（動画の長さの1/' + opt.scanRate + 'ほどかかります）', true);
+    AudioScan.scan(url, opt.scanRate, (p) => {
+      RallyNav.showScan('解析中 ' + Math.round(p * 100) + '%（動画の長さの1/' + opt.scanRate + 'ほどかかります）', true);
+    }).then((samples) => {
+      if (!samples) { RallyNav.showScan('', false); return; } // やめた
+      const starts = RallyDetect.findStarts(samples, opt);
+      const before = Matches.rallyStarts(key).length;
+      let result = true;
+      starts.forEach((t) => { result = Matches.addRallyStart(key, t); });
+      saved(result);
+      const added = Matches.rallyStarts(key).length - before;
+      RallyNav.showScan(starts.length === 0
+        ? 'ラリーが見つかりませんでした（音が小さい・入っていない動画かもしれません）'
+        : starts.length + '本見つけ、' + added + '個の印を付けました。余分な印は「印の一覧」の ✕ で消せます', false);
+      syncRally();
+    }).catch((err) => {
+      RallyNav.showScan('解析できませんでした（' + err.message + '）', false);
+    });
+  },
+  onAutoStop() {
+    AudioScan.stop();
+    RallyNav.showScan('', false);
+  },
   starts: () => (Clips.currentKey() ? Matches.rallyStarts(Clips.currentKey()) : []),
   now: Player.currentTime,
 });

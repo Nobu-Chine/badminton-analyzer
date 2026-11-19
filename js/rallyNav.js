@@ -30,9 +30,12 @@ const RallyNav = (() => {
   }
 
   // onMark()：「＋ ラリー開始」 / onJump(time)：前／次のラリーへ飛ぶ / onRemove(index)：印を消す
+  // onAuto()：「自動で見つける」 / onAutoStop()：解析をやめる
   // starts()：今の動画の印 / now()：今の再生位置
-  function init({ onMark, onJump, onRemove, starts, now }) {
+  function init({ onMark, onJump, onRemove, onAuto, onAutoStop, starts, now }) {
     document.getElementById('markRallyBtn').onclick = onMark;
+    document.getElementById('autoRallyBtn').onclick = onAuto;
+    document.getElementById('autoRallyStopBtn').onclick = onAutoStop;
     nextBtn.onclick = () => { const t = nextStart(starts(), now()); if (t !== null) onJump(t); };
     prevBtn.onclick = () => { const t = prevStart(starts(), now()); if (t !== null) onJump(t); };
     removeMark = onRemove;
@@ -70,5 +73,12 @@ const RallyNav = (() => {
     });
   }
 
-  return { init, render, nextStart };
+  // 自動検出の様子を出す。running：解析中か（ボタンの出し分け）
+  function showScan(message, running) {
+    document.getElementById('autoRallyStatus').textContent = message;
+    document.getElementById('autoRallyBtn').hidden = running;
+    document.getElementById('autoRallyStopBtn').hidden = !running;
+  }
+
+  return { init, render, nextStart, showScan };
 })();

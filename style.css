@@ -88,6 +88,10 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 .rally-info { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 4px; font-size: 12px; color: #666; }
 .rally-info details[hidden] { display: none; }
 .rally-info summary { cursor: pointer; color: #1f6f4a; }
+.link-btn { border: none; background: none; padding: 2px 0; color: #1f6f4a; font-size: 12px; text-decoration: underline; cursor: pointer; }
+.link-btn[hidden] { display: none; }
+.auto-status { flex-basis: 100%; color: #7a5a00; }
+.auto-status:empty { display: none; }
 .rally-chips { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 4px; }
 .clip-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .clip-nav[hidden] { display: none; }
