@@ -257,6 +257,31 @@ const Matches = (() => {
       return v && v.sides ? v.sides.map((p) => ({ time: p.time, side: p.side })) : [];
     },
 
+    // ラリーの印：動画ごとに rallies: [時間, ...]（ラリーの始まり、時間順）
+
+    rallyStarts(key) {
+      const v = videoOf(key);
+      return v && v.rallies ? v.rallies.slice() : [];
+    },
+
+    // ラリーの始まりを足す（すぐ近くに印があれば足さない）
+    addRallyStart(key, time) {
+      const v = videoOf(key);
+      if (!v) return save();
+      const list = v.rallies || [];
+      if (!list.some((t) => Math.abs(t - time) < Settings.rallyMinGap)) {
+        v.rallies = list.concat([time]).sort((a, b) => a - b);
+      }
+      return save();
+    },
+
+    // ラリーの印を1つ消す（index は rallyStarts の並びの番号）
+    removeRallyStart(key, index) {
+      const v = videoOf(key);
+      if (v && v.rallies) v.rallies.splice(index, 1);
+      return save();
+    },
+
     // コートチェンジを1つ消す（index は sideChanges の並びの番号）
     removeSideChange(key, index) {
       const v = videoOf(key);

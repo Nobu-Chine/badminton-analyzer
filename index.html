@@ -53,6 +53,21 @@
       <span id="clipLabel"></span>
       <button id="nextClipBtn">次の動画 ▶</button>
     </div>
+    <!-- ラリーの印（rallyNav.js）：始まりに印を付けて、ラリーごとに飛べる -->
+    <div class="rally-nav" id="rallyNav" hidden>
+      <div class="rally-buttons">
+        <button id="prevRallyBtn">◀ 前のラリー</button>
+        <button id="markRallyBtn">＋ ラリー開始</button>
+        <button id="nextRallyBtn">次のラリー ▶</button>
+      </div>
+      <div class="rally-info">
+        <span id="rallyLabel"></span>
+        <details id="rallyMarks" hidden>
+          <summary id="rallyMarksSummary"></summary>
+          <div class="rally-chips" id="rallyChips"></div>
+        </details>
+      </div>
+    </div>
     <!-- よく使う再生操作。スマホでは画面の下に固定する（コートのすぐ上に置いて、指の移動を少なくする） -->
     <div class="dock">
       <div class="controls">
@@ -195,6 +210,7 @@
 <script src="js/courtView.js"></script>
 <script src="js/dialog.js"></script>
 <script src="js/sceneMemo.js"></script>
+<script src="js/rallyNav.js"></script>
 <script src="js/list.js"></script>
 <script src="js/matchPicker.js"></script>
 <script src="js/videoList.js"></script>
