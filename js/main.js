@@ -226,6 +226,13 @@ RallyNav.init({
       RallyNav.showScan('解析中 ' + Math.round(p * 100) + '%（動画の長さの1/' + opt.scanRate + 'ほどかかります）', true);
     }).then((samples) => {
       if (!samples) { RallyNav.showScan('', false); return; } // やめた
+      // 音を読めたかどうか（端末によっては読めないので、原因を見分けるために件数を出す）
+      const heard = samples.filter((s) => s.e > 0).length;
+      if (heard === 0) {
+        RallyNav.showScan('音を読めませんでした（この端末・ブラウザでは音の解析ができないかもしれません。音の記録 ' +
+          samples.length + '件）', false);
+        return;
+      }
       const starts = RallyDetect.findStarts(samples, opt);
       const before = Matches.rallyStarts(key).length;
       let result = true;
@@ -233,7 +240,7 @@ RallyNav.init({
       saved(result);
       const added = Matches.rallyStarts(key).length - before;
       RallyNav.showScan(starts.length === 0
-        ? 'ラリーが見つかりませんでした（音が小さい・入っていない動画かもしれません）'
+        ? 'ラリーが見つかりませんでした（音は読めましたが、打球音を拾えませんでした。音の記録 ' + heard + '件）'
         : starts.length + '本見つけ、' + added + '個の印を付けました。余分な印は「印の一覧」の ✕ で消せます', false);
       syncRally();
     }).catch((err) => {

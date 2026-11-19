@@ -24,6 +24,8 @@ const AudioScan = (() => {
   function scan(url, rate, onProgress) {
     stop();
     const ctx = new AudioContext();
+    // iPhone の Safari は、ボタンを押したその流れの中で動かし始めないと、音の処理が止まったままになる
+    ctx.resume();
     const video = document.createElement('video');
     video.src = url;
     video.playsInline = true;
