@@ -9,8 +9,8 @@ const RecordList = (() => {
   // zoneOf(record)：落ちた場所（'ネット前' / '中盤' / 'コート奥'、コート外は null）を返す関数
   // videoNumberOf(record)：試合の何本目の動画か（動画が1本の試合では null）
   // isPlayable(record)：その記録の動画が今読み込まれているか
-  function init({ onSelect, onDelete, scoreOf, setupByOf, zoneOf, videoNumberOf, isPlayable }) {
-    handlers = { onSelect, onDelete, scoreOf, setupByOf, zoneOf, videoNumberOf, isPlayable };
+  function init({ onSelect, onEdit, onDelete, scoreOf, setupByOf, zoneOf, videoNumberOf, isPlayable }) {
+    handlers = { onSelect, onEdit, onDelete, scoreOf, setupByOf, zoneOf, videoNumberOf, isPlayable };
   }
 
   // 例：「自分 クリア（ストレート） バックアウト」
@@ -51,6 +51,7 @@ const RecordList = (() => {
           Player.formatTime(r.time) + '</span>' +
         '<span class="tag ' + (score === '得点' ? 'point' : 'miss') + '">' + score + '</span>' +
         '<span class="rec-text"></span>' +
+        '<button class="edit-btn" title="直す">✎</button>' +
         '<button class="del-btn" title="削除">✕</button>';
       const text = li.querySelector('.rec-text');
       text.textContent = describe(r);
@@ -63,7 +64,11 @@ const RecordList = (() => {
       }
 
       li.onclick = () => handlers.onSelect(r);
-      // 削除（一覧の移動処理が動かないように止める）
+      // 直す・削除（一覧の再生処理が動かないように止める）
+      li.querySelector('.edit-btn').onclick = (e) => {
+        e.stopPropagation();
+        handlers.onEdit(r);
+      };
       li.querySelector('.del-btn').onclick = (e) => {
         e.stopPropagation();
         handlers.onDelete(r);

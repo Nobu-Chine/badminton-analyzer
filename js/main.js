@@ -204,6 +204,12 @@ RecordDialog.init({
   missingItems: Rules.missingItems,
   inactiveKeys: Rules.inactiveKeys,
   onSave(record) {
+    // 直した記録（id がある）は上書きするだけ。再生はしない
+    if (record.id) {
+      saved(Matches.updateRecord(record));
+      refresh();
+      return;
+    }
     // どの動画の記録か（コートをタップしたときの動画。open で入れてある）
     record.videoKey = record.videoKey || Clips.currentKey();
     saved(Matches.addRecord(record));
@@ -213,7 +219,11 @@ RecordDialog.init({
     Player.play();
   },
   // 「動画を見直す」：入力は残したまま、動画が見える所まで動かす
-  onReview: () => Player.reveal(),
+  //   直している記録なら、その場面を流して確認できるようにする
+  onReview(draft) {
+    if (draft.id) { Playlist.stop(); playRecord(draft); }
+    Player.reveal();
+  },
 });
 
 RecordList.init({
@@ -229,6 +239,13 @@ RecordList.init({
     const no = Matches.videoNumber(record);
     if (record.videoKey) alert((no ? '動画' + no : 'この記録の動画') + 'がまだ選ばれていません。「動画を選ぶ」で選んでください');
     else alert('先に動画を選んでください');
+  },
+  onEdit(record) {
+    // 見直し中の記録があるときは、黙って消さずに確かめる
+    if (RecordDialog.hasDraft() && !confirm('入力途中の記録をやめて、この記録を直しますか？')) return;
+    Playlist.stop();
+    Player.pause();
+    RecordDialog.edit(record);
   },
   onDelete(record) {
     if (!confirm('この記録を削除しますか？')) return;

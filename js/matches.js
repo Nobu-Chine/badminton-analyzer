@@ -301,6 +301,13 @@ const Matches = (() => {
       return save();
     },
 
+    // 保存済みの記録を、同じ id のまま上書きする
+    updateRecord(record) {
+      const m = current();
+      if (m) m.records = m.records.map((r) => (r.id === record.id ? record : r));
+      return save();
+    },
+
     removeRecord(id) {
       const m = current();
       if (m) m.records = m.records.filter((r) => r.id !== id);

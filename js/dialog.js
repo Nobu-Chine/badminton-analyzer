@@ -68,7 +68,8 @@ const RecordDialog = (() => {
   }
 
   // onSave(record)：保存ボタンで、入力済みの記録を受け取る
-  // onReview()：「動画を見直す」で記録画面を閉じたとき（動画を見える所に出すため）
+  // onSave(record) には、直した記録なら id が付いたまま渡す
+  // onReview(draft)：「動画を見直す」で記録画面を閉じたとき（動画を見える所に出すため）
   // missingItems(draft)：足りない項目名の配列を返す / inactiveKeys(draft)：今は使わない項目の配列を返す
   function init({ onSave, onReview, missingItems, inactiveKeys }) {
     rules = { missingItems, inactiveKeys };
@@ -78,7 +79,7 @@ const RecordDialog = (() => {
       dialog.close();
       resumeBtn.textContent = '記録の続きに戻る（' + Player.formatTime(draft.time) + '）';
       resumeBar.hidden = false;
-      onReview();
+      onReview(draft);
     };
     resumeBtn.onclick = show;
     // メモは書くたびに入力中の記録へ入れる（見直しで閉じても残る）
@@ -101,6 +102,19 @@ const RecordDialog = (() => {
     };
   }
 
+  // 記録の項目の初期値（新しく記録するときも、古い記録を直すときも、全部の項目をそろえる）
+  const EMPTY = { player: null, shot: null, course: null, outcome: null,
+                  winType: null, missType: null, cause: null, setupShot: null, memo: null };
+
+  // 保存済みの記録を直す。今の内容を入れた状態で開く（時間と位置はそのまま）
+  function edit(record) {
+    draft = Object.assign({}, EMPTY, record);
+    document.getElementById('dlgTitle').textContent = '記録を直す';
+    dlgError.textContent = '';
+    show();
+    dialog.scrollTop = 0;
+  }
+
   // extra：記録に一緒に入れておく値（どの動画の記録か など）
   function open(time, x, y, extra) {
     // 見直し中にコートをタップしたら、入力はそのままで位置だけ置き直す
@@ -109,16 +123,17 @@ const RecordDialog = (() => {
       show();
       return;
     }
-    draft = Object.assign({ time, x, y, player: null, shot: null, course: null, outcome: null,
-              winType: null, missType: null, cause: null, setupShot: null, memo: null }, extra);
+    draft = Object.assign({ time, x, y }, EMPTY, extra);
+    document.getElementById('dlgTitle').textContent = '記録する';
     dlgError.textContent = '';
     show();
     dialog.scrollTop = 0;
   }
 
   return {
-    init, open, discard,
+    init, open, edit, discard,
     isOpen: () => dialog.open,
+    hasDraft: () => !!draft, // 入力途中の記録があるか（見直し中も含む）
     draftVideoKey: () => (draft ? draft.videoKey : null), // 見直し中の記録の動画（なければ null）
   };
 })();
