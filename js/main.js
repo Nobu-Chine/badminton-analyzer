@@ -23,6 +23,13 @@ function refresh() {
   refreshStats();
   syncSide();
   syncMemo();
+  syncRally();
+}
+
+// ラリーの印の表示を、今の動画・今の時間に合わせる
+function syncRally() {
+  const key = Clips.currentKey();
+  RallyNav.render(key ? Matches.rallyStarts(key) : [], Player.currentTime(), Player.hasVideo(), Player.formatTime);
 }
 
 // 今流れている場面の記録にメモがあれば、動画の下に出す
@@ -191,8 +198,29 @@ const courtView = CourtView.init({
     syncSide(true);
   },
 });
+// ラリーの印：今の時間に印を付ける／前・次のラリーの始まりへ飛ぶ／印を消す
+RallyNav.init({
+  onMark() {
+    const key = Clips.currentKey();
+    if (!key) return;
+    saved(Matches.addRallyStart(key, Player.currentTime()));
+    syncRally();
+  },
+  onJump(time) {
+    Playlist.stop();
+    Player.seekAndPlay(time);
+  },
+  onRemove(index) {
+    if (!confirm('このラリーの印を消しますか？')) return;
+    saved(Matches.removeRallyStart(Clips.currentKey(), index));
+    syncRally();
+  },
+  starts: () => (Clips.currentKey() ? Matches.rallyStarts(Clips.currentKey()) : []),
+  now: Player.currentTime,
+});
+
 // 再生位置が変わったら、その時間の向きに合わせる（巻き戻したときも自動で戻る）
-Player.onTimeChange(() => { syncSide(); syncMemo(); });
+Player.onTimeChange(() => { syncSide(); syncMemo(); syncRally(); });
 
 Court.init((x, y) => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
@@ -214,9 +242,11 @@ RecordDialog.init({
     record.videoKey = record.videoKey || Clips.currentKey();
     saved(Matches.addRecord(record));
     refresh();
-    // 記録したら、動画に戻って続きを再生する（次のラリーをすぐ見られるように）
+    // 記録したら、動画に戻って次を見る。次のラリーの印があればそこへ飛び、なければ続きを再生する
     Player.reveal();
-    Player.play();
+    const next = RallyNav.nextStart(Matches.rallyStarts(record.videoKey), record.time);
+    if (next !== null && record.videoKey === Clips.currentKey()) Player.seekAndPlay(next);
+    else Player.play();
   },
   // 「動画を見直す」：入力は残したまま、動画が見える所まで動かす
   //   直している記録なら、その場面を流して確認できるようにする

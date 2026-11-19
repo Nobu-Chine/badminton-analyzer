@@ -21,4 +21,8 @@ const Settings = {
   playbackRates: [1, 0.5, 0.25], // 速度の選択肢（1 が普通の速さ）
   fineSeekSeconds: 3,            // 細かいバーで動かせる幅（今の位置の前後 何秒）
   frameSeconds: 1 / 30,          // 「1コマ」で進む・戻る秒数（30コマ/秒の動画で1コマ）
+
+  // ラリーの印（rallyNav.js）
+  rallyMinGap: 1,       // これより近い印は同じ印とみなす（秒）
+  rallyBackSeconds: 1.5, // 「前のラリー」：ラリーの始まりからこれ以上たっていたら、今のラリーの始まりに戻る
 };

@@ -77,6 +77,18 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 .side-change { display: inline-flex; align-items: center; gap: 2px; padding: 2px 6px; background: #f1f5f3; border-radius: 6px; color: #333; }
 .side-change button { border: none; background: none; color: #999; font-size: 13px; padding: 2px 4px; cursor: pointer; }
 /* 動画の切り替え */
+/* ラリーの印 */
+.rally-nav { margin-bottom: 10px; }
+.rally-nav[hidden] { display: none; }
+.rally-buttons { display: flex; gap: 6px; }
+.rally-buttons button { flex: 1; padding: 9px 0; border: 1px solid #c9d8cf; border-radius: 10px; background: #fff;
+  color: #1f6f4a; font-size: 13px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+.rally-buttons #markRallyBtn { background: #fff7e0; border-color: #e6c66a; color: #7a5a00; }
+.rally-buttons button:disabled { color: #bbb; border-color: #e3e3e3; cursor: default; }
+.rally-info { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 4px; font-size: 12px; color: #666; }
+.rally-info details[hidden] { display: none; }
+.rally-info summary { cursor: pointer; color: #1f6f4a; }
+.rally-chips { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 4px; }
 .clip-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .clip-nav[hidden] { display: none; }
 .clip-nav button { flex: 1; padding: 10px 0; border: 1px solid #c9d8cf; border-radius: 10px;
