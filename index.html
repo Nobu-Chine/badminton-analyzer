@@ -21,6 +21,17 @@
     </label>
     <!-- 動画がなくても操作を試せるように（sample.js / sampleData.js） -->
     <button class="sample-btn" id="sampleBtn">サンプルで試す</button>
+    <!-- 使い方。ふだんはたたんでおき、「サンプルで試す」を押したときに開く -->
+    <details class="guide" id="guide">
+      <summary>使い方</summary>
+      <ol>
+        <li>「▶ 再生」で動画を流す（サンプルは真っ暗で、時間だけが出ます）</li>
+        <li>ラリーが始まったら「＋ ラリー開始」を押す（あとで「次のラリー」で飛べます）</li>
+        <li>点が決まったら動画を止めて、コート図の<b>シャトルが落ちた場所</b>をタップ</li>
+        <li>誰が・ショット・どうなったを選んで保存（失点のときは原因も）</li>
+        <li>「集計」タブで、失点の原因などの内訳を見る。棒を押すと、その場面だけを順に再生できます</li>
+      </ol>
+    </details>
     <span id="fileName"></span>
     <!-- 試合の切り替え。動画を選ぶと、その動画の試合に自動で切り替わる -->
     <label class="match-row">試合：<select id="matchSelect"></select></label>

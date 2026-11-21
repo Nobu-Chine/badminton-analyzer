@@ -21,6 +21,7 @@ const Sample = (() => {
         input.files = list.files;
         input.dispatchEvent(new Event('change'));
         onLoaded();
+        document.getElementById('guide').open = true; // 何をすればいいか分かるように
       } catch (err) {
         alert('サンプル動画を読み込めませんでした。通信の状態を確かめて、もう一度押してください');
       } finally {
