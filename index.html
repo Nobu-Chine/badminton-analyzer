@@ -19,6 +19,8 @@
       動画を選ぶ（複数可）
       <input type="file" id="fileInput" accept="video/*" multiple>
     </label>
+    <!-- 動画がなくても操作を試せるように（sample.js / sampleData.js） -->
+    <button class="sample-btn" id="sampleBtn">サンプルで試す</button>
     <span id="fileName"></span>
     <!-- 試合の切り替え。動画を選ぶと、その動画の試合に自動で切り替わる -->
     <label class="match-row">試合：<select id="matchSelect"></select></label>
@@ -220,6 +222,8 @@
 <script src="js/backup.js"></script>
 <script src="js/recordFilter.js"></script>
 <script src="js/playlist.js"></script>
+<script src="js/sampleData.js"></script>
+<script src="js/sample.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
