@@ -33,8 +33,11 @@ main {
 .guide summary { cursor: pointer; color: #1f6f4a; font-weight: bold; }
 .guide[hidden] { display: none; }
 /* お題：ここから始めるので、いちばん目立たせる */
-.guide-mission { margin: 8px 0 4px; padding: 8px 10px; background: #fff; border-left: 4px solid #1f6f4a;
-  border-radius: 6px; font-size: 15px; font-weight: bold; color: #1f6f4a; line-height: 1.5; }
+.guide-mission { margin: 8px 0 6px; padding: 10px 12px; background: #1f6f4a; border-radius: 8px;
+  font-size: 16px; font-weight: bold; color: #fff; line-height: 1.5; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+/* 上に「やってみよう」の札（1行に1つだけ置くため table） */
+.guide-mission::before { content: 'やってみよう'; display: table; margin-bottom: 4px; padding: 1px 8px;
+  border-radius: 10px; background: #ffd84d; color: #5a4300; font-size: 11px; }
 .guide-note { margin: 6px 0 0; font-size: 12px; color: #666; }
 .guide ol { margin: 6px 0 2px; padding-left: 1.4em; line-height: 1.7; }
 .sample-btn:disabled { color: #999; border-color: #ccc; }
