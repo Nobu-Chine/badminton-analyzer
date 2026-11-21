@@ -31,7 +31,7 @@
     <!-- 試合の切り替え。動画を選ぶと、その動画の試合に自動で切り替わる -->
     <label class="match-row">試合：<select id="matchSelect"></select></label>
     <label class="add-video" id="addVideoLabel">＋ この試合に動画を追加<input type="file" id="addVideoInput" accept="video/*" multiple></label>
-    <!-- この試合の動画の一覧（✕で試合から外せる） -->
+    <!-- この試合の動画の一覧（「削除」で試合から外せる） -->
     <details class="video-list" id="videoList" hidden>
       <summary id="videoListSummary"></summary>
       <ul id="videoListItems"></ul>
@@ -114,7 +114,7 @@
     </div>
     <!-- コートの線は court.js が描く -->
     <svg id="court" xmlns="http://www.w3.org/2000/svg"></svg>
-    <p class="hint">動画を一時停止して、シャトルが落ちた位置をタップ<br>
+    <p class="hint">シャトルが落ちた位置をタップして記録（再生中なら自動で止まります）<br>
       <span style="color:#2a7de1">●</span> 得点　<span style="color:#d9443b">●</span> 失点</p>
   </section>
 

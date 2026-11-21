@@ -224,7 +224,8 @@ Player.onTimeChange(() => { syncSide(); syncMemo(); syncRally(); });
 
 Court.init((x, y) => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
-  if (!Player.isPaused()) { alert('動画を一時停止してからタップしてください'); return; }
+  // 再生中にタップしたら、その場で止めて記録する（「止めてから」と覚えておかなくていいように）
+  if (!Player.isPaused()) Player.pause();
   RecordDialog.open(Player.currentTime(), x, y, { videoKey: Clips.currentKey() });
 }, courtView);
 

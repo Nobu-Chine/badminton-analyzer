@@ -25,12 +25,12 @@ const VideoList = (() => {
         '<span class="video-no">動画' + (i + 1) + '</span>' +
         '<span class="video-name"></span>' +
         '<span class="video-status"></span>' +
-        '<button class="video-del" aria-label="この動画を削除">✕</button>';
+        '<button class="del-btn" aria-label="この動画を削除">削除</button>';
       li.querySelector('.video-name').textContent = v.name;
       const st = li.querySelector('.video-status');
       st.textContent = status;
       st.classList.toggle('off', status === '未選択');
-      li.querySelector('.video-del').onclick = () => onDeleteVideo(v);
+      li.querySelector('.del-btn').onclick = () => onDeleteVideo(v);
       list.appendChild(li);
     });
   }
