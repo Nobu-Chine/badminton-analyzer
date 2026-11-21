@@ -32,6 +32,9 @@ main {
 .guide { margin-top: 10px; padding: 8px 12px; background: #f1f7f3; border-radius: 10px; font-size: 13px; color: #333; }
 .guide summary { cursor: pointer; color: #1f6f4a; font-weight: bold; }
 .guide[hidden] { display: none; }
+/* お題：ここから始めるので、いちばん目立たせる */
+.guide-mission { margin: 8px 0 4px; padding: 8px 10px; background: #fff; border-left: 4px solid #1f6f4a;
+  border-radius: 6px; font-size: 15px; font-weight: bold; color: #1f6f4a; line-height: 1.5; }
 .guide-note { margin: 6px 0 0; font-size: 12px; color: #666; }
 .guide ol { margin: 6px 0 2px; padding-left: 1.4em; line-height: 1.7; }
 .sample-btn:disabled { color: #999; border-color: #ccc; }

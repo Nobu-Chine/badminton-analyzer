@@ -8,6 +8,7 @@ const Sample = (() => {
     const g = SampleData.guide;
     document.getElementById('guideTitle').textContent = g.title;
     document.getElementById('guideNote').textContent = g.note;
+    document.getElementById('guideMission').textContent = g.mission;
     const list = document.getElementById('guideSteps');
     list.innerHTML = '';
     g.steps.forEach((text) => list.appendChild(Object.assign(document.createElement('li'), { textContent: text })));
