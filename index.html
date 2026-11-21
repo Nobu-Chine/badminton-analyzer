@@ -70,6 +70,10 @@
       </div>
       <div class="rally-info">
         <span id="rallyLabel"></span>
+        <!-- 打球音からラリーを自動で見つける（audioScan.js / rallyDetect.js） -->
+        <button class="link-btn" id="autoRallyBtn">自動で見つける（試し）</button>
+        <span class="auto-status" id="autoRallyStatus"></span>
+        <button class="link-btn" id="autoRallyStopBtn" hidden>やめる</button>
         <details id="rallyMarks" hidden>
           <summary id="rallyMarksSummary"></summary>
           <div class="rally-chips" id="rallyChips"></div>
@@ -218,6 +222,8 @@
 <script src="js/courtView.js"></script>
 <script src="js/dialog.js"></script>
 <script src="js/sceneMemo.js"></script>
+<script src="js/rallyDetect.js"></script>
+<script src="js/audioScan.js"></script>
 <script src="js/rallyNav.js"></script>
 <script src="js/list.js"></script>
 <script src="js/matchPicker.js"></script>

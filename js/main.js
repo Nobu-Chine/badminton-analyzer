@@ -215,6 +215,41 @@ RallyNav.init({
     saved(Matches.removeRallyStart(Clips.currentKey(), index));
     syncRally();
   },
+  // 打球音からラリーを見つけて、始まりに印を付ける（すでにある印の近くには足さない）
+  onAuto() {
+    const key = Clips.currentKey();
+    const url = Player.sourceUrl();
+    if (!key || !url) return;
+    const opt = Settings.rallyDetect;
+    const progress = (p, rate) => RallyNav.showScan('解析中 ' + Math.round(p * 100) + '%（' + rate +
+      '倍速で読んでいます。動画の長さの1/' + rate + 'ほどかかります）', true);
+    progress(0, opt.scanRates[0]);
+    AudioScan.scan(url, opt.scanRates, progress).then((result) => {
+      if (!result) { RallyNav.showScan('', false); return; } // やめた
+      // どの速さでも無音だった（端末によっては音を読めない）
+      if (result.rate === null) {
+        RallyNav.showScan('音を読めませんでした（' + opt.scanRates.join('・') +
+          '倍速で試しましたが無音でした。この端末・ブラウザでは音の解析ができないかもしれません）', false);
+        return;
+      }
+      const starts = RallyDetect.findStarts(result.samples, opt);
+      const before = Matches.rallyStarts(key).length;
+      let ok = true;
+      starts.forEach((t) => { ok = Matches.addRallyStart(key, t); });
+      saved(ok);
+      const added = Matches.rallyStarts(key).length - before;
+      RallyNav.showScan(starts.length === 0
+        ? 'ラリーが見つかりませんでした（音は読めましたが、打球音を拾えませんでした。' + result.rate + '倍速・音の記録 ' + result.samples.length + '件）'
+        : starts.length + '本見つけ、' + added + '個の印を付けました（' + result.rate + '倍速で解析）。余分な印は「印の一覧」の ✕ で消せます', false);
+      syncRally();
+    }).catch((err) => {
+      RallyNav.showScan('解析できませんでした（' + err.message + '）', false);
+    });
+  },
+  onAutoStop() {
+    AudioScan.stop();
+    RallyNav.showScan('', false);
+  },
   starts: () => (Clips.currentKey() ? Matches.rallyStarts(Clips.currentKey()) : []),
   now: Player.currentTime,
 });
