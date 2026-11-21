@@ -320,9 +320,7 @@ const Matches = (() => {
     addRecord(record) {
       const m = current();
       if (!m) return save();
-      // 続けて足しても id が重ならないよう、今ある id より必ず大きくする
-      const last = m.records.reduce((max, r) => Math.max(max, r.id || 0), 0);
-      record.id = Math.max(Date.now(), last + 1);
+      record.id = Date.now();
       m.records.push(record);
       sortRecords(m);
       return save();
