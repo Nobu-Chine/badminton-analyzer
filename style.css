@@ -31,6 +31,8 @@ main {
   color: #1f6f4a; font-size: 14px; cursor: pointer; }
 .guide { margin-top: 10px; padding: 8px 12px; background: #f1f7f3; border-radius: 10px; font-size: 13px; color: #333; }
 .guide summary { cursor: pointer; color: #1f6f4a; font-weight: bold; }
+.guide[hidden] { display: none; }
+.guide-note { margin: 6px 0 0; font-size: 12px; color: #666; }
 .guide ol { margin: 6px 0 2px; padding-left: 1.4em; line-height: 1.7; }
 .sample-btn:disabled { color: #999; border-color: #ccc; }
 #fileName { margin-left: 8px; font-size: 13px; color: #666; }

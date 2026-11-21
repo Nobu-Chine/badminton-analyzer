@@ -3,6 +3,19 @@
 const Sample = (() => {
   const btn = document.getElementById('sampleBtn');
 
+  // サンプルの使い方を出して開く（文は sampleData.js）
+  function showGuide() {
+    const g = SampleData.guide;
+    document.getElementById('guideTitle').textContent = g.title;
+    document.getElementById('guideNote').textContent = g.note;
+    const list = document.getElementById('guideSteps');
+    list.innerHTML = '';
+    g.steps.forEach((text) => list.appendChild(Object.assign(document.createElement('li'), { textContent: text })));
+    const box = document.getElementById('guide');
+    box.hidden = false;
+    box.open = true;
+  }
+
   // onLoaded()：サンプル動画を「動画を選ぶ」に渡したあと（記録やラリーの印を入れる）
   function init({ onLoaded }) {
     btn.onclick = async () => {
@@ -21,7 +34,7 @@ const Sample = (() => {
         input.files = list.files;
         input.dispatchEvent(new Event('change'));
         onLoaded();
-        document.getElementById('guide').open = true; // 何をすればいいか分かるように
+        showGuide(); // 何をすればいいか分かるように
       } catch (err) {
         alert('サンプル動画を読み込めませんでした。通信の状態を確かめて、もう一度押してください');
       } finally {
