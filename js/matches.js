@@ -198,6 +198,16 @@ const Matches = (() => {
 
     // 今の試合から動画を外す。その動画に付けた記録も一緒に消す（動画ファイル自体には触らない）
     // 動画も記録もなくなった試合は、試合ごと消して、残っている試合に切り替える
+    // その動画の記録・ラリーの印・コートチェンジだけを消して、最初からにする（動画は試合に残す）
+    clearVideoData(key) {
+      const m = current();
+      if (!m) return save();
+      m.records = m.records.filter((r) => r.videoKey !== key);
+      const v = m.videos.find((x) => x.key === key);
+      if (v) { v.rallies = []; v.sides = []; }
+      return save();
+    },
+
     removeVideo(key) {
       const m = current();
       if (!m) return save();

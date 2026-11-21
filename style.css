@@ -27,6 +27,14 @@ main {
   background: #1f6f4a; color: #fff; cursor: pointer; font-size: 15px;
 }
 .file-btn input { display: none; }
+.sample-btn { margin-left: 6px; padding: 9px 14px; border: 1px solid #1f6f4a; border-radius: 8px; background: #fff;
+  color: #1f6f4a; font-size: 14px; cursor: pointer; }
+.guide { margin-top: 10px; padding: 8px 12px; background: #f1f7f3; border-radius: 10px; font-size: 13px; color: #333; }
+.guide summary { cursor: pointer; color: #1f6f4a; font-weight: bold; }
+.guide[hidden] { display: none; }
+.guide-note { margin: 6px 0 0; font-size: 12px; color: #666; }
+.guide ol { margin: 6px 0 2px; padding-left: 1.4em; line-height: 1.7; }
+.sample-btn:disabled { color: #999; border-color: #ccc; }
 #fileName { margin-left: 8px; font-size: 13px; color: #666; }
 .match-row { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 14px; color: #555; }
 .add-video { display: inline-block; margin-top: 8px; font-size: 13px; color: #1f6f4a; cursor: pointer; }

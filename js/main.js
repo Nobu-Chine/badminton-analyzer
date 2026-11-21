@@ -284,5 +284,28 @@ RecordList.init({
   },
 });
 
+// 「サンプルで試す」：サンプルの試合に記録とラリーの印がまだなければ入れる（中身は sampleData.js）
+Sample.init({
+  onLoaded() {
+    const key = Clips.currentKey();
+    if (!key) return;
+    let ok = true;
+    // 前に試した記録や印が残っていれば、消して最初から始めるか聞く（サンプルの動画の分だけ消す）
+    const tried = Matches.records().some((r) => r.videoKey === key) || Matches.rallyStarts(key).length > 0;
+    if (tried && confirm('前に試した記録が残っています。消して最初から始めますか？')) {
+      ok = Matches.clearVideoData(key);
+    }
+    if (Matches.records().length === 0) {
+      SampleData.records.forEach((r) => {
+        ok = Matches.addRecord(Object.assign({ course: null, winType: null, missType: null, cause: null,
+          setupShot: null, memo: null }, r, { videoKey: key }));
+      });
+    }
+    SampleData.rallies.forEach((t) => { ok = Matches.addRallyStart(key, t); });
+    saved(ok);
+    refresh();
+  },
+});
+
 syncClips();
 refresh();
