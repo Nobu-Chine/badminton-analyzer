@@ -8,18 +8,17 @@ const PlaybackTools = (() => {
   let center = 0;        // 細かいバーの真ん中にあたる動画の時間
   let dragging = false;  // 細かいバーを動かしている間
 
-  // 秒を「分:秒.1桁」で（コマ単位の確認なので、小数まで出す）
+  // 秒を「分:秒.2桁」で（1コマは約0.03秒なので、1/100秒まで出して進んだことが分かるように）
   function preciseTime(sec) {
     const m = Math.floor(sec / 60);
-    const s = (sec % 60).toFixed(1).padStart(4, '0');
+    const s = (sec % 60).toFixed(2).padStart(5, '0');
     return m + ':' + s;
   }
 
-  function showNote() {
-    const offset = Number(fine.value);
-    note.textContent = dragging
-      ? preciseTime(center + offset) + '（' + (offset >= 0 ? '+' : '') + offset.toFixed(1) + '秒）'
-      : '真ん中が今の位置・左右に動かすと前後' + range + '秒だけ細かく動きます';
+  // バーを動かしている間・1コマ送りのあとだけ、今の時間を出す（ふだんは何も出さない）
+  function showTime(time, offset) {
+    note.textContent = preciseTime(time) +
+      (offset === undefined ? '' : '（' + (offset >= 0 ? '+' : '') + offset.toFixed(2) + '秒）');
   }
 
   function renderRates(current) {
@@ -37,7 +36,9 @@ const PlaybackTools = (() => {
   function step(direction) {
     if (!Player.hasVideo()) return;
     Player.pause();
-    Player.seekTo(Player.currentTime() + direction * Settings.frameSeconds);
+    const target = Math.max(0, Player.currentTime() + direction * Settings.frameSeconds);
+    Player.seekTo(target);
+    showTime(target);
   }
 
   function init() {
@@ -52,21 +53,25 @@ const PlaybackTools = (() => {
       if (!Player.hasVideo()) { fine.value = 0; return; }
       if (!dragging) { dragging = true; Player.pause(); }
       Player.seekTo(center + Number(fine.value));
-      showNote();
+      showTime(center + Number(fine.value), Number(fine.value));
     });
     // 指を離したら、そこを新しい真ん中にしてバーを中央に戻す（続けて細かく動かせる）
     fine.addEventListener('change', () => {
       dragging = false;
       center = Player.currentTime();
       fine.value = 0;
-      showNote();
+      showTime(center);
     });
     // 再生や他の操作で位置が変わったら、真ん中をそこに合わせる
-    Player.onTimeChange(() => { if (!dragging) center = Player.currentTime(); });
+    // 再生が始まったら時間の表示は消す
+    Player.onTimeChange(() => {
+      if (dragging) return;
+      center = Player.currentTime();
+      if (!Player.isPaused()) note.textContent = '';
+    });
 
     document.getElementById('framePrevBtn').onclick = () => step(-1);
     document.getElementById('frameNextBtn').onclick = () => step(1);
-    showNote();
   }
 
   return { init };

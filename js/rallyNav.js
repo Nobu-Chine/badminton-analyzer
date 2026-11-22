@@ -7,7 +7,7 @@ const RallyNav = (() => {
   const prevBtn = document.getElementById('prevRallyBtn');
   const nextBtn = document.getElementById('nextRallyBtn');
   let shownKey = ''; // 同じ内容なら描き直さない（再生中は何度も呼ばれるため）
-  let removeMark = null; // 印の ✕ を押したとき
+  let removeMark = null; // 印の「削除」を押したとき
 
   // time より後の、いちばん近いラリーの始まり（なければ null）
   function nextStart(starts, time) {
@@ -55,7 +55,7 @@ const RallyNav = (() => {
       ? 'ラリーが始まる場面で「＋ ラリー開始」を押すと、ラリーごとに飛べます'
       : 'ラリー ' + (index > 0 ? index : '-') + ' / ' + starts.length;
 
-    // 印の一覧（多くなるので、たたんでおく）。✕ で消せる
+    // 印の一覧（多くなるので、たたんでおく）。「削除」で消せる
     marks.hidden = starts.length === 0;
     document.getElementById('rallyMarksSummary').textContent = '印の一覧（' + starts.length + '）';
     const chips = document.getElementById('rallyChips');
@@ -65,8 +65,9 @@ const RallyNav = (() => {
       item.className = 'side-change';
       item.textContent = (i + 1) + '. ' + fmt(t);
       const del = document.createElement('button');
-      del.textContent = '✕';
-      del.setAttribute('aria-label', 'この印を消す');
+      del.className = 'del-btn small';
+      del.textContent = '削除';
+      del.setAttribute('aria-label', 'この印を削除');
       del.onclick = () => removeMark(i);
       item.appendChild(del);
       chips.appendChild(item);

@@ -20,6 +20,8 @@ main {
 @media (min-width: 900px) {
   main { grid-template-columns: 2fr 1fr; }
 }
+/* カードが中身（長い動画名など）に合わせて画面より広がらないように */
+.card { min-width: 0; }
 .card { background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 .card h2 { margin: 0 0 8px; font-size: 15px; }
 .file-btn {
@@ -27,6 +29,20 @@ main {
   background: #1f6f4a; color: #fff; cursor: pointer; font-size: 15px;
 }
 .file-btn input { display: none; }
+.sample-btn { margin-left: 6px; padding: 9px 14px; border: 1px solid #1f6f4a; border-radius: 8px; background: #fff;
+  color: #1f6f4a; font-size: 14px; cursor: pointer; }
+.guide { margin-top: 10px; padding: 8px 12px; background: #f1f7f3; border-radius: 10px; font-size: 13px; color: #333; }
+.guide summary { cursor: pointer; color: #1f6f4a; font-weight: bold; }
+.guide[hidden] { display: none; }
+/* お題：ここから始めるので、いちばん目立たせる */
+.guide-mission { margin: 8px 0 6px; padding: 10px 12px; background: #1f6f4a; border-radius: 8px;
+  font-size: 16px; font-weight: bold; color: #fff; line-height: 1.5; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+/* 上に「やってみよう」の札（1行に1つだけ置くため table） */
+.guide-mission::before { content: 'やってみよう'; display: table; margin-bottom: 4px; padding: 1px 8px;
+  border-radius: 10px; background: #ffd84d; color: #5a4300; font-size: 11px; }
+.guide-note { margin: 6px 0 0; font-size: 12px; color: #666; }
+.guide ol { margin: 6px 0 2px; padding-left: 1.4em; line-height: 1.7; }
+.sample-btn:disabled { color: #999; border-color: #ccc; }
 #fileName { margin-left: 8px; font-size: 13px; color: #666; }
 .match-row { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 14px; color: #555; }
 .add-video { display: inline-block; margin-top: 8px; font-size: 13px; color: #1f6f4a; cursor: pointer; }
@@ -42,10 +58,11 @@ main {
 .video-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .video-status { font-size: 11px; color: #1f6f4a; }
 .video-status.off { color: #aaa; }
-/* スマホでも押しやすいよう、×は 44px 四方 */
-.video-del { width: 44px; height: 44px; flex-shrink: 0; border: none; border-radius: 8px;
-  background: none; color: #999; font-size: 18px; cursor: pointer; }
-.video-del:active { background: #fbeaea; color: #d9443b; }
+/* ページのいちばん下：記録のバックアップ（PCの2列でも横幅いっぱい） */
+.backup { grid-column: 1 / -1; padding: 10px 14px; background: #fff; border-radius: 12px; font-size: 13px; color: #555;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.backup summary { cursor: pointer; }
+.backup-note { margin: 8px 0 0; font-size: 12px; color: #777; }
 .backup-row { display: flex; gap: 8px; margin-top: 8px; }
 .backup-row button, .backup-row label { flex: 1; padding: 8px 0; text-align: center; font-size: 13px;
   border: 1px solid #ccc; border-radius: 8px; background: #fff; color: #333; cursor: pointer; }
@@ -75,7 +92,6 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 .side-changes { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 12px; color: #777; }
 .side-changes[hidden] { display: none; }
 .side-change { display: inline-flex; align-items: center; gap: 2px; padding: 2px 6px; background: #f1f5f3; border-radius: 6px; color: #333; }
-.side-change button { border: none; background: none; color: #999; font-size: 13px; padding: 2px 4px; cursor: pointer; }
 /* 動画の切り替え */
 /* ラリーの印 */
 .rally-nav { margin-bottom: 10px; }
@@ -127,7 +143,8 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 .fine-row input { flex: 1; min-width: 0; }
 .fine-row button { padding: 7px 8px; border: 1px solid #cfd8d3; border-radius: 8px; background: #fff;
   color: #1f6f4a; font-size: 13px; white-space: nowrap; cursor: pointer; }
-.fine-note { text-align: center; font-size: 11px; color: #888; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.fine-note { min-height: 1.4em; text-align: center; font-size: 12px; color: #555; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.tap-hint { margin: 4px 0 6px; text-align: center; font-size: 13px; color: #1f6f4a; font-weight: bold; }
 .hint { font-size: 12px; color: #777; text-align: center; margin: 6px 0 0; }
 
 /* 記録一覧 */
@@ -197,8 +214,19 @@ button.stats-row { -webkit-tap-highlight-color: rgba(31, 111, 74, .25); }
 /* 動画の下：今流れている場面のメモ */
 .scene-memo { margin-top: 6px; padding: 6px 10px; background: #fff8e1; border-radius: 8px; font-size: 13px; color: #5c4a14; }
 .scene-memo[hidden] { display: none; }
-.edit-btn { border: none; background: none; color: #1f6f4a; font-size: 17px; cursor: pointer; padding: 4px 6px; }
-.del-btn { border: none; background: none; color: #999; font-size: 18px; cursor: pointer; padding: 4px 8px; }
+/* 「直す」「削除」はどの場所でも同じ見た目にする（✕ は「閉じる・やめる」だけに使う） */
+.edit-btn, .del-btn { flex-shrink: 0; padding: 6px 10px; border-radius: 8px; background: #fff;
+  font-size: 13px; cursor: pointer; white-space: nowrap; }
+.edit-btn { border: 1px solid #b9d3c4; color: #1f6f4a; }
+.del-btn { border: 1px solid #e6b8b3; color: #c0392b; }
+.del-btn:active { background: #fbeaea; }
+.edit-btn + .del-btn { margin-left: 6px; }
+/* 記録の一覧では縦に積んで、記録の文の幅を広くとる */
+.rec-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+.rec-actions .edit-btn + .del-btn { margin-left: 0; }
+.rec-actions button { padding: 4px 8px; font-size: 12px; }
+/* 小さい一覧（ラリーの印・コートチェンジ）の中の削除 */
+.del-btn.small { margin-left: 4px; padding: 2px 6px; font-size: 11px; }
 .empty { color: #888; font-size: 14px; padding: 8px 4px; }
 
 /* 記録入力ダイアログ */

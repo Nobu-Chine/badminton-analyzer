@@ -259,7 +259,8 @@ Player.onTimeChange(() => { syncSide(); syncMemo(); syncRally(); });
 
 Court.init((x, y) => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
-  if (!Player.isPaused()) { alert('動画を一時停止してからタップしてください'); return; }
+  // 再生中にタップしたら、その場で止めて記録する（「止めてから」と覚えておかなくていいように）
+  if (!Player.isPaused()) Player.pause();
   RecordDialog.open(Player.currentTime(), x, y, { videoKey: Clips.currentKey() });
 }, courtView);
 
@@ -315,6 +316,29 @@ RecordList.init({
   onDelete(record) {
     if (!confirm('この記録を削除しますか？')) return;
     saved(Matches.removeRecord(record.id));
+    refresh();
+  },
+});
+
+// 「サンプルで試す」：サンプルの試合に記録とラリーの印がまだなければ入れる（中身は sampleData.js）
+Sample.init({
+  onLoaded() {
+    const key = Clips.currentKey();
+    if (!key) return;
+    let ok = true;
+    // 前に試した記録や印が残っていれば、消して最初から始めるか聞く（サンプルの動画の分だけ消す）
+    const tried = Matches.records().some((r) => r.videoKey === key) || Matches.rallyStarts(key).length > 0;
+    if (tried && confirm('前に試した記録が残っています。消して最初から始めますか？')) {
+      ok = Matches.clearVideoData(key);
+    }
+    if (Matches.records().length === 0) {
+      SampleData.records.forEach((r) => {
+        ok = Matches.addRecord(Object.assign({ course: null, winType: null, missType: null, cause: null,
+          setupShot: null, memo: null }, r, { videoKey: key }));
+      });
+    }
+    SampleData.rallies.forEach((t) => { ok = Matches.addRallyStart(key, t); });
+    saved(ok);
     refresh();
   },
 });

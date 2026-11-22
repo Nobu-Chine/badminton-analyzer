@@ -26,7 +26,7 @@ const CourtView = (() => {
 
   // onOrientation(view)：縦／横が切り替わったとき
   // onSidePressed(side)：「自分：左／右」が押されたとき（コートチェンジとして記録するのは呼び出し側）
-  // onRemoveChange(index)：コートチェンジの ✕ が押されたとき
+  // onRemoveChange(index)：コートチェンジの「削除」が押されたとき
   function init(h) {
     handlers = h;
     view = Object.assign(view, Store.load(KEY, {}));
@@ -71,8 +71,9 @@ const CourtView = (() => {
         // 最初の点（動画のはじめの向き）は消せないようにする
         if (i > 0) {
           const del = document.createElement('button');
-          del.textContent = '✕';
-          del.setAttribute('aria-label', 'このコートチェンジを消す');
+          del.className = 'del-btn small';
+          del.textContent = '削除';
+          del.setAttribute('aria-label', 'このコートチェンジを削除');
           del.onclick = () => handlers.onRemoveChange(i);
           item.appendChild(del);
         }

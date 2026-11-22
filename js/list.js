@@ -3,7 +3,7 @@ const RecordList = (() => {
   const list = document.getElementById('records');
   let handlers = null;
 
-  // onSelect(record)：記録を押したとき / onDelete(record)：✕を押したとき
+  // onSelect(record)：記録を押したとき / onDelete(record)：「削除」を押したとき
   // scoreOf(record)：'得点' か '失点' を返す関数
   // setupByOf(record)：甘かった前の球を打った人（'自分' か '相手'）を返す関数
   // zoneOf(record)：落ちた場所（'ネット前' / '中盤' / 'コート奥'、コート外は null）を返す関数
@@ -51,8 +51,7 @@ const RecordList = (() => {
           Player.formatTime(r.time) + '</span>' +
         '<span class="tag ' + (score === '得点' ? 'point' : 'miss') + '">' + score + '</span>' +
         '<span class="rec-text"></span>' +
-        '<button class="edit-btn" title="直す">✎</button>' +
-        '<button class="del-btn" title="削除">✕</button>';
+        '<span class="rec-actions"><button class="edit-btn">直す</button><button class="del-btn">削除</button></span>';
       const text = li.querySelector('.rec-text');
       text.textContent = describe(r);
       // メモがあれば、その記録の下に小さく出す

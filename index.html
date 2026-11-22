@@ -19,20 +19,24 @@
       動画を選ぶ（複数可）
       <input type="file" id="fileInput" accept="video/*" multiple>
     </label>
+    <!-- 動画がなくても操作を試せるように（sample.js / sampleData.js） -->
+    <button class="sample-btn" id="sampleBtn">サンプルで試す</button>
+    <!-- サンプルの使い方。サンプルを読み込んだときだけ出す。文は sampleData.js（動画と一緒に差し替える） -->
+    <details class="guide" id="guide" hidden>
+      <summary id="guideTitle"></summary>
+      <p class="guide-note" id="guideNote"></p>
+      <p class="guide-mission" id="guideMission"></p>
+      <ol id="guideSteps"></ol>
+    </details>
     <span id="fileName"></span>
     <!-- 試合の切り替え。動画を選ぶと、その動画の試合に自動で切り替わる -->
     <label class="match-row">試合：<select id="matchSelect"></select></label>
     <label class="add-video" id="addVideoLabel">＋ この試合に動画を追加<input type="file" id="addVideoInput" accept="video/*" multiple></label>
-    <!-- この試合の動画の一覧（✕で試合から外せる） -->
+    <!-- この試合の動画の一覧（「削除」で試合から外せる） -->
     <details class="video-list" id="videoList" hidden>
       <summary id="videoListSummary"></summary>
       <ul id="videoListItems"></ul>
     </details>
-    <!-- 記録のバックアップ（動画は含まない） -->
-    <div class="backup-row">
-      <button id="exportBtn">記録を書き出す</button>
-      <label>記録を読み込む<input type="file" id="importInput" accept=".json,application/json"></label>
-    </div>
     <div class="placeholder" id="placeholder">動画ファイルを選ぶとここで再生されます<br>（動画はサーバーに送られません）</div>
     <!-- iPhone などの標準の操作（10秒送りのアイコンが重なって出る）は使わず、アプリの操作だけにする。
          動画をタップすると再生・停止。全画面のときだけ標準の操作が出る -->
@@ -97,7 +101,7 @@
       <div class="seg">
         <span>向き</span>
         <button data-orientation="vertical">縦</button>
-        <button data-orientation="horizontal">横（動画と同じ）</button>
+        <button data-orientation="horizontal">横</button>
       </div>
       <div class="seg" id="meSideRow" hidden>
         <span>自分</span>
@@ -108,10 +112,11 @@
       <!-- この動画のコートチェンジ（何時から自分がどちら側か）。courtView.js が描く -->
       <div class="side-changes" id="sideChanges" hidden></div>
     </div>
+    <!-- タップする前に読むので、コート図のすぐ上に置く -->
+    <p class="tap-hint">シャトルが落ちた位置をタップして記録（再生中なら自動で止まります）</p>
     <!-- コートの線は court.js が描く -->
     <svg id="court" xmlns="http://www.w3.org/2000/svg"></svg>
-    <p class="hint">動画を一時停止して、シャトルが落ちた位置をタップ<br>
-      <span style="color:#2a7de1">●</span> 得点　<span style="color:#d9443b">●</span> 失点</p>
+    <p class="hint"><span style="color:#2a7de1">●</span> 得点　<span style="color:#d9443b">●</span> 失点</p>
   </section>
 
   <!-- 記録一覧と集計（タブで切り替え） -->
@@ -145,6 +150,16 @@
       <div id="stats"></div>
     </div>
   </section>
+
+  <!-- 記録のバックアップ（動画は含まない）。たまにしか使わないので、いちばん下にたたんでおく -->
+  <details class="backup">
+    <summary>記録のバックアップ（書き出し・読み込み）</summary>
+    <p class="backup-note">記録はこのブラウザの中にだけ保存されています。端末を替えるときや、念のための保存に使います。</p>
+    <div class="backup-row">
+      <button id="exportBtn">記録を書き出す</button>
+      <label>記録を読み込む<input type="file" id="importInput" accept=".json,application/json"></label>
+    </div>
+  </details>
 </main>
 
 <!-- 記録入力ダイアログ -->
@@ -226,6 +241,8 @@
 <script src="js/backup.js"></script>
 <script src="js/recordFilter.js"></script>
 <script src="js/playlist.js"></script>
+<script src="js/sampleData.js"></script>
+<script src="js/sample.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
