@@ -102,7 +102,7 @@
       <div class="seg">
         <span>向き</span>
         <button data-orientation="vertical">縦</button>
-        <button data-orientation="horizontal">横（動画と同じ）</button>
+        <button data-orientation="horizontal">横</button>
       </div>
       <div class="seg" id="meSideRow" hidden>
         <span>自分</span>
@@ -113,10 +113,11 @@
       <!-- この動画のコートチェンジ（何時から自分がどちら側か）。courtView.js が描く -->
       <div class="side-changes" id="sideChanges" hidden></div>
     </div>
+    <!-- タップする前に読むので、コート図のすぐ上に置く -->
+    <p class="tap-hint">シャトルが落ちた位置をタップして記録（再生中なら自動で止まります）</p>
     <!-- コートの線は court.js が描く -->
     <svg id="court" xmlns="http://www.w3.org/2000/svg"></svg>
-    <p class="hint">シャトルが落ちた位置をタップして記録（再生中なら自動で止まります）<br>
-      <span style="color:#2a7de1">●</span> 得点　<span style="color:#d9443b">●</span> 失点</p>
+    <p class="hint"><span style="color:#2a7de1">●</span> 得点　<span style="color:#d9443b">●</span> 失点</p>
   </section>
 
   <!-- 記録一覧と集計（タブで切り替え） -->

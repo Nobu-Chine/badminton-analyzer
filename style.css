@@ -132,7 +132,8 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 .fine-row input { flex: 1; min-width: 0; }
 .fine-row button { padding: 7px 8px; border: 1px solid #cfd8d3; border-radius: 8px; background: #fff;
   color: #1f6f4a; font-size: 13px; white-space: nowrap; cursor: pointer; }
-.fine-note { text-align: center; font-size: 11px; color: #888; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.fine-note { min-height: 1.4em; text-align: center; font-size: 12px; color: #555; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.tap-hint { margin: 4px 0 6px; text-align: center; font-size: 13px; color: #1f6f4a; font-weight: bold; }
 .hint { font-size: 12px; color: #777; text-align: center; margin: 6px 0 0; }
 
 /* 記録一覧 */
