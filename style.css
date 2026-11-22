@@ -20,6 +20,8 @@ main {
 @media (min-width: 900px) {
   main { grid-template-columns: 2fr 1fr; }
 }
+/* カードが中身（長い動画名など）に合わせて画面より広がらないように */
+.card { min-width: 0; }
 .card { background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 .card h2 { margin: 0 0 8px; font-size: 15px; }
 .file-btn {
