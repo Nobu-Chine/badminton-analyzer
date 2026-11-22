@@ -56,6 +56,11 @@ main {
 .video-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .video-status { font-size: 11px; color: #1f6f4a; }
 .video-status.off { color: #aaa; }
+/* ページのいちばん下：記録のバックアップ（PCの2列でも横幅いっぱい） */
+.backup { grid-column: 1 / -1; padding: 10px 14px; background: #fff; border-radius: 12px; font-size: 13px; color: #555;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.backup summary { cursor: pointer; }
+.backup-note { margin: 8px 0 0; font-size: 12px; color: #777; }
 .backup-row { display: flex; gap: 8px; margin-top: 8px; }
 .backup-row button, .backup-row label { flex: 1; padding: 8px 0; text-align: center; font-size: 13px;
   border: 1px solid #ccc; border-radius: 8px; background: #fff; color: #333; cursor: pointer; }
