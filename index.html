@@ -37,11 +37,6 @@
       <summary id="videoListSummary"></summary>
       <ul id="videoListItems"></ul>
     </details>
-    <!-- 記録のバックアップ（動画は含まない） -->
-    <div class="backup-row">
-      <button id="exportBtn">記録を書き出す</button>
-      <label>記録を読み込む<input type="file" id="importInput" accept=".json,application/json"></label>
-    </div>
     <div class="placeholder" id="placeholder">動画ファイルを選ぶとここで再生されます<br>（動画はサーバーに送られません）</div>
     <!-- iPhone などの標準の操作（10秒送りのアイコンが重なって出る）は使わず、アプリの操作だけにする。
          動画をタップすると再生・停止。全画面のときだけ標準の操作が出る -->
@@ -150,6 +145,16 @@
       <div id="stats"></div>
     </div>
   </section>
+
+  <!-- 記録のバックアップ（動画は含まない）。たまにしか使わないので、いちばん下にたたんでおく -->
+  <details class="backup">
+    <summary>記録のバックアップ（書き出し・読み込み）</summary>
+    <p class="backup-note">記録はこのブラウザの中にだけ保存されています。端末を替えるときや、念のための保存に使います。</p>
+    <div class="backup-row">
+      <button id="exportBtn">記録を書き出す</button>
+      <label>記録を読み込む<input type="file" id="importInput" accept=".json,application/json"></label>
+    </div>
+  </details>
 </main>
 
 <!-- 記録入力ダイアログ -->
