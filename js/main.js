@@ -240,7 +240,7 @@ RallyNav.init({
       const added = Matches.rallyStarts(key).length - before;
       RallyNav.showScan(starts.length === 0
         ? 'ラリーが見つかりませんでした（音は読めましたが、打球音を拾えませんでした。' + result.rate + '倍速・音の記録 ' + result.samples.length + '件）'
-        : starts.length + '本見つけ、' + added + '個の印を付けました（' + result.rate + '倍速で解析）。余分な印は「印の一覧」の ✕ で消せます', false);
+        : starts.length + '本見つけ、' + added + '個の印を付けました（' + result.rate + '倍速で解析）。余分な印は「印の一覧」の「削除」で消せます', false);
       syncRally();
     }).catch((err) => {
       RallyNav.showScan('解析できませんでした（' + err.message + '）', false);
