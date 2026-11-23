@@ -286,6 +286,13 @@ const Matches = (() => {
     },
 
     // ラリーの印を1つ消す（index は rallyStarts の並びの番号）
+    // その動画のラリーの印を全部消す（自動検出で置き換えるとき）
+    clearRallyStarts(key) {
+      const v = videoOf(key);
+      if (v) v.rallies = [];
+      return save();
+    },
+
     removeRallyStart(key, index) {
       const v = videoOf(key);
       if (v && v.rallies) v.rallies.splice(index, 1);

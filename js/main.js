@@ -233,8 +233,16 @@ RallyNav.init({
         return;
       }
       const starts = RallyDetect.findStarts(result.samples, opt);
-      const before = Matches.rallyStarts(key).length;
       let ok = true;
+      // すでに印があれば、置き換えるか聞く（何度も押すと、少しずれた印が二重に付くため）
+      //   ※ 解析が終わってから聞く。押した直後に聞くと、iPhone で音の解析を始められなくなる
+      const existing = Matches.rallyStarts(key).length;
+      if (existing > 0 && starts.length > 0 &&
+          confirm('今ある印（' + existing + '個）を消して、見つけた印（' + starts.length + '個）に置き換えますか？\n\n' +
+            'キャンセルすると、今の印は残して、足りない所にだけ足します。')) {
+        ok = Matches.clearRallyStarts(key);
+      }
+      const before = Matches.rallyStarts(key).length;
       starts.forEach((t) => { ok = Matches.addRallyStart(key, t); });
       saved(ok);
       const added = Matches.rallyStarts(key).length - before;
