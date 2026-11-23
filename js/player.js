@@ -121,6 +121,7 @@ const Player = (() => {
     //   なめらかに動かす指定は、環境によって動かないことがあったので、すぐ移動する
     reveal: () => video.scrollIntoView({ block: 'start' }),
     currentTime: () => video.currentTime,
+    sourceUrl: () => (hasVideo() ? video.src : null), // 今の動画のURL（別の場所で同じ動画を読むため）
     duration: () => video.duration || 0,
     // 指定の時間へ移動する（動画の長さの範囲におさめる）
     seekTo(time) {
