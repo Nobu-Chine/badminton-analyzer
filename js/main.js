@@ -215,6 +215,46 @@ RallyNav.init({
     saved(Matches.removeRallyStart(Clips.currentKey(), index));
     syncRally();
   },
+  // つなぎ目で区切る：切り取ってつないだ動画のつなぎ目を探し、各ラリーの始まりに印を付ける
+  onCutScan() {
+    const key = Clips.currentKey();
+    const url = Player.sourceUrl();
+    if (!key || !url) return;
+    const opt = Settings.cutDetect;
+    const progress = (p) => RallyNav.showScan('解析中 ' + Math.round(p * 100) + '%（動画の長さの1/' +
+      opt.scanRate + 'ほどかかります）。解析中はこの画面のままにしてください（離れても、戻れば続きから再開します）', true);
+    progress(0);
+    FrameScan.scan(url, opt.scanRate, progress).then((changes) => {
+      if (!changes) { RallyNav.showScan('', false); return; } // やめた
+      const cuts = CutDetect.findCuts(changes, opt);
+      if (cuts.length === 0) {
+        RallyNav.showScan('つなぎ目が見つかりませんでした（切り取ってつないだ動画ではないかもしれません）', false);
+        return;
+      }
+      // 最初のラリーは動画の始まりから。あとはつなぎ目ごとに1本
+      const starts = [0].concat(cuts);
+      let ok = true;
+      // すでに印があれば、置き換えるか聞く（何度も押したとき、印が二重にならないように）
+      const existing = Matches.rallyStarts(key).length;
+      if (existing > 0 && confirm('今ある印（' + existing + '個）を消して、つなぎ目の印（' + starts.length +
+        '個）に置き換えますか？\n\nキャンセルすると、今の印は残して、足りない所にだけ足します。')) {
+        ok = Matches.clearRallyStarts(key);
+      }
+      const before = Matches.rallyStarts(key).length;
+      starts.forEach((t) => { ok = Matches.addRallyStart(key, t); });
+      saved(ok);
+      const added = Matches.rallyStarts(key).length - before;
+      RallyNav.showScan(starts.length + '本のラリーに区切り、' + added +
+        '個の印を付けました。違う所があれば「印の一覧」の「削除」で消せます', false);
+      syncRally();
+    }).catch((err) => {
+      RallyNav.showScan('解析できませんでした（' + err.message + '）', false);
+    });
+  },
+  onCutScanStop() {
+    FrameScan.stop();
+    RallyNav.showScan('', false);
+  },
   starts: () => (Clips.currentKey() ? Matches.rallyStarts(Clips.currentKey()) : []),
   now: Player.currentTime,
 });
