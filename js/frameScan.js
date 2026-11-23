@@ -3,7 +3,16 @@
 const FrameScan = (() => {
   const SIZE = 160;      // 縮めたときの長い辺（ピクセル）。小さくても、選手の位置が変わったのは分かる
   const PIXEL_DIFF = 20; // 明るさがこれ以上変わった点を「変わった」と数える
+  const MAX_GAP = 0.25;  // 前に読んだコマからこれ以上（秒）飛んでいたら、その2つは比べない（つなぎ目と間違えないため）
   let running = null;
+
+  // 解析中は画面が自動で消えないようにする（消えると解析が止まるため）。使えない端末では何もしない
+  async function keepAwake(job) {
+    try {
+      if (!navigator.wakeLock || document.visibilityState !== 'visible') return;
+      job.wakeLock = await navigator.wakeLock.request('screen');
+    } catch (e) { /* 使えなくても解析は続ける */ }
+  }
 
   // url：動画のURL / rate：何倍速で流すか / onProgress(0〜1)
   // 戻り値：Promise<[{ t, v }]>（v は変わった点の割合 0〜1）。やめたときは null
@@ -25,6 +34,8 @@ const FrameScan = (() => {
       let timer = null;
       const cleanup = () => {
         if (timer) clearInterval(timer);
+        document.removeEventListener('visibilitychange', onVisible);
+        if (job.wakeLock) job.wakeLock.release().catch(() => {});
         if (running === job) running = null;
         video.pause();
         video.removeAttribute('src');
@@ -32,6 +43,24 @@ const FrameScan = (() => {
         video.remove();
       };
       job.cancel = () => { job.cancelled = true; cleanup(); resolve(null); };
+
+      // 別のページやアプリに切り替えると、iPhone ではページの動きが止められる。
+      // 戻ってきたら、止まった位置から続きを読む（それまでの記録はそのまま）
+      let lastResume = 0;
+      const resumeIfStopped = () => {
+        if (job.cancelled || video.ended || !video.paused || document.visibilityState !== 'visible') return;
+        const now = Date.now();
+        if (now - lastResume < 1000) return; // 何度も続けて頼まない
+        lastResume = now;
+        video.play().catch(() => {});
+      };
+      function onVisible() {
+        // 裏に回ったら止める（コマを読めないまま進むと、離れたコマどうしを比べてしまうため）
+        if (document.visibilityState !== 'visible') { video.pause(); return; }
+        keepAwake(job); // 裏に回ると画面を消さない設定は解除されるので、かけ直す
+        resumeIfStopped();
+      }
+      document.addEventListener('visibilitychange', onVisible);
 
       video.addEventListener('error', () => { cleanup(); reject(new Error('動画を読めませんでした')); });
       video.addEventListener('loadedmetadata', () => {
@@ -44,6 +73,7 @@ const FrameScan = (() => {
         canvas.height = h;
         const g = canvas.getContext('2d', { willReadFrequently: true });
         let prev = null;
+        let prevTime = 0;
         let lastTime = -1;
         const changes = [];
 
@@ -57,18 +87,23 @@ const FrameScan = (() => {
             const d = g.getImageData(0, 0, w, h).data;
             const gray = new Uint8Array(w * h);
             for (let i = 0; i < gray.length; i++) gray[i] = (d[i * 4] * 3 + d[i * 4 + 1] * 6 + d[i * 4 + 2]) / 10;
+            // 前に読んだコマから時間が飛んでいたら、比べ直しから始める
+            if (prev && t - prevTime > MAX_GAP) prev = null;
             if (prev) {
               let changed = 0;
               for (let i = 0; i < gray.length; i++) if (Math.abs(gray[i] - prev[i]) > PIXEL_DIFF) changed++;
               changes.push({ t, v: changed / gray.length });
             }
             prev = gray;
+            prevTime = t;
             if (video.duration) onProgress(Math.min(1, t / video.duration));
           }
-          if (video.ended) { cleanup(); resolve(changes); }
+          if (video.ended) { cleanup(); resolve(changes); return; }
+          resumeIfStopped();
         }, 20);
 
         video.playbackRate = rate;
+        keepAwake(job);
         video.play().catch((err) => { cleanup(); reject(err); });
       });
     });

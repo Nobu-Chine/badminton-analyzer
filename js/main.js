@@ -222,7 +222,7 @@ RallyNav.init({
     if (!key || !url) return;
     const opt = Settings.cutDetect;
     const progress = (p) => RallyNav.showScan('解析中 ' + Math.round(p * 100) + '%（動画の長さの1/' +
-      opt.scanRate + 'ほどかかります）', true);
+      opt.scanRate + 'ほどかかります）。解析中はこの画面のままにしてください（離れても、戻れば続きから再開します）', true);
     progress(0);
     FrameScan.scan(url, opt.scanRate, progress).then((changes) => {
       if (!changes) { RallyNav.showScan('', false); return; } // やめた
