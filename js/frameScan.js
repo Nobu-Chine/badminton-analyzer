@@ -77,27 +77,47 @@ const FrameScan = (() => {
         let lastTime = -1;
         const changes = [];
 
-        // 短い間隔で今のコマを読み、前のコマと比べる
+        // 今のコマを読み、前に読んだコマと比べる（同じコマは2回読まない）
+        const readFrame = (t) => {
+          if (job.cancelled || t === lastTime) return;
+          lastTime = t;
+          g.drawImage(video, 0, 0, w, h);
+          const d = g.getImageData(0, 0, w, h).data;
+          const gray = new Uint8Array(w * h);
+          for (let i = 0; i < gray.length; i++) gray[i] = (d[i * 4] * 3 + d[i * 4 + 1] * 6 + d[i * 4 + 2]) / 10;
+          // 前に読んだコマから時間が飛んでいたら、比べ直しから始める
+          if (prev && t - prevTime > MAX_GAP) prev = null;
+          if (prev) {
+            let changed = 0;
+            for (let i = 0; i < gray.length; i++) if (Math.abs(gray[i] - prev[i]) > PIXEL_DIFF) changed++;
+            changes.push({ t, v: changed / gray.length });
+          }
+          prev = gray;
+          prevTime = t;
+          if (video.duration) onProgress(Math.min(1, t / video.duration));
+        };
+
+        // 読み方は2つ。最初の2秒で、どちらを使うかを1つに決める（途中で混ぜると読み飛ばしが起きるため）
+        //   frame：1コマ表示されるたびに合図をもらう（iPhone の Safari など。1コマも飛ばさない）
+        //   timer：短い間隔で今のコマを読む（合図が来ない・ときどきしか来ない環境用）
+        let mode = 'probe'; // 決めるまでは両方で読む
+        let signals = 0;
+        const probeStart = Date.now();
+        if ('requestVideoFrameCallback' in video) {
+          const onFrame = (now, meta) => {
+            if (job.cancelled || video.ended || mode === 'timer') return;
+            signals++;
+            readFrame(meta.mediaTime);
+            video.requestVideoFrameCallback(onFrame);
+          };
+          video.requestVideoFrameCallback(onFrame);
+        }
+
         timer = setInterval(() => {
           if (job.cancelled) return;
-          const t = video.currentTime;
-          if (t !== lastTime) {
-            lastTime = t;
-            g.drawImage(video, 0, 0, w, h);
-            const d = g.getImageData(0, 0, w, h).data;
-            const gray = new Uint8Array(w * h);
-            for (let i = 0; i < gray.length; i++) gray[i] = (d[i * 4] * 3 + d[i * 4 + 1] * 6 + d[i * 4 + 2]) / 10;
-            // 前に読んだコマから時間が飛んでいたら、比べ直しから始める
-            if (prev && t - prevTime > MAX_GAP) prev = null;
-            if (prev) {
-              let changed = 0;
-              for (let i = 0; i < gray.length; i++) if (Math.abs(gray[i] - prev[i]) > PIXEL_DIFF) changed++;
-              changes.push({ t, v: changed / gray.length });
-            }
-            prev = gray;
-            prevTime = t;
-            if (video.duration) onProgress(Math.min(1, t / video.duration));
-          }
+          // 2秒たったら決める。合図が1秒に10回以上来ていれば frame、そうでなければ timer
+          if (mode === 'probe' && Date.now() - probeStart > 2000) mode = signals >= 20 ? 'frame' : 'timer';
+          if (mode !== 'frame') readFrame(video.currentTime);
           if (video.ended) { cleanup(); resolve(changes); return; }
           resumeIfStopped();
         }, 20);
