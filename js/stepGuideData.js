@@ -65,4 +65,6 @@ const StepGuideData = {
   // 「自分で区切る」を選んだとき、あとのステップに一緒に出す一言
   manualRallyTip: 'ラリーの始まりで「＋ ラリー開始」を押すと、ラリーごとに飛べます',
   closeLabel: '案内を閉じる',
+  // 前に済ませたステップを飛ばしたときの一言（numbers：飛ばしたステップの番号）
+  skippedNote: (numbers) => 'この動画は、前にステップ' + numbers.join('・') + 'を済ませているので飛ばしました',
 };

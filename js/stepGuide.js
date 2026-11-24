@@ -10,6 +10,7 @@ const StepGuide = (() => {
   let onAction = null;
   let shownKey = ''; // 同じ内容なら描き直さない（再生中は何度も呼ばれるため）
   let current = null; // 今出している状態（閉じるときに使う）
+  const seenSteps = {}; // 動画の key → このページで出したステップの番号（飛ばしたステップを伝えるため）
 
   function progressOf(videoKey) {
     return progress[videoKey] || {};
@@ -49,6 +50,15 @@ const StepGuide = (() => {
     const p = progressOf(s.videoKey);
 
     add(box, 'div', 'step-head', 'ステップ ' + data.number + '／' + StepGuideData.total + '　' + data.title);
+
+    // 前に済ませていて、今回は出さずに飛ばしたステップがあれば伝える（いきなり先のステップが出て驚かないように）
+    if (s.videoKey) {
+      const seen = seenSteps[s.videoKey] || (seenSteps[s.videoKey] = new Set());
+      seen.add(data.number);
+      const skipped = [];
+      for (let n = 2; n < data.number; n++) if (!seen.has(n)) skipped.push(n);
+      if (skipped.length > 0) add(box, 'p', 'step-tip', StepGuideData.skippedNote(skipped));
+    }
     add(box, 'p', 'step-text', data.text);
 
     const buttons = data.buttonsBy ? data.buttonsBy[p.orientation] : data.buttons;
