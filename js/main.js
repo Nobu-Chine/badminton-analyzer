@@ -35,7 +35,8 @@ function syncGuide() {
   if (key && !isSample) Sample.hideGuide();
   StepGuide.render({
     videoKey: key,
-    hidden: isSample,
+    // 検出中の画面を出している間は、案内を重ねない（閉じたら続きを出す）
+    hidden: isSample || FrameScan.isRunning() || ScanView.isOpen(),
     rallyCount: key ? Matches.rallyStarts(key).length : 0,
     sideCount: key ? Matches.sideChanges(key).length : 0,
     recordCount: key ? Matches.records().filter((r) => r.videoKey === key).length : 0,
@@ -239,13 +240,18 @@ RallyNav.init({
     syncGuide();
   },
   onCutScan: cutScan,
-  onCutScanStop() {
-    FrameScan.stop();
-    RallyNav.showScan('', false);
-  },
+  onCutScanStop: stopScan,
   starts: () => (Clips.currentKey() ? Matches.rallyStarts(Clips.currentKey()) : []),
   now: Player.currentTime,
 });
+
+// 検出をやめる（手前の画面の［やめる］と、ラリーの印の所の「やめる」）
+function stopScan() {
+  FrameScan.stop();
+}
+
+// 検出中の画面：［やめる］で止める。結果を見て閉じたら、手順の案内の続きを出す
+ScanView.init({ onStop: stopScan, closed: syncGuide });
 
 // つなぎ目で区切る：切り取ってつないだ動画のつなぎ目を探し、各ラリーの始まりに印を付ける
 //   「つなぎ目で区切る」のほか、手順の案内の「はい → 自動で区切る」からも使う
@@ -254,14 +260,18 @@ function cutScan() {
   const url = Player.sourceUrl();
   if (!key || !url) return;
   const opt = Settings.cutDetect;
-  const progress = (p) => RallyNav.showScan('解析中 ' + Math.round(p * 100) + '%（動画の長さの1/' +
-    opt.scanRate + 'ほどかかります）。解析中はこの画面のままにしてください（離れても、戻れば続きから再開します）', true);
+  // 検出中は手前の画面に出す（ほかのアプリに切り替えないよう伝える）
+  const minutes = Math.max(1, Math.round(Player.duration() / opt.scanRate / 60));
+  const progress = (p) => ScanView.progress(p, 'ほかのアプリに切り替えず、この画面のまま待ってください（' + minutes + '分ほど）');
+  // 結果は手前の画面と、ラリーの印の所の両方に出す（あとから見返せるように）
+  const finish = (heading, text) => { ScanView.done(heading, text); RallyNav.showScan(text, false); };
+  RallyNav.showScan('', true);
   progress(0);
   FrameScan.scan(url, opt.scanRate, progress).then((changes) => {
-    if (!changes) { RallyNav.showScan('', false); return; } // やめた
+    if (!changes) { RallyNav.showScan('', false); ScanView.hide(); return; } // やめた
     const cuts = CutDetect.findCuts(changes, opt);
     if (cuts.length === 0) {
-      RallyNav.showScan('つなぎ目が見つかりませんでした（切り取ってつないだ動画ではないかもしれません）', false);
+      finish('つなぎ目が見つかりませんでした', '切り取ってつないだ動画ではないかもしれません。ラリーの始まりで「＋ ラリー開始」を押すと、自分で区切れます');
       return;
     }
     // 最初のラリーは動画の始まりから。あとはつなぎ目ごとに1本
@@ -277,11 +287,11 @@ function cutScan() {
     starts.forEach((t) => { ok = Matches.addRallyStart(key, t); });
     saved(ok);
     const added = Matches.rallyStarts(key).length - before;
-    RallyNav.showScan(starts.length + '本のラリーに区切り、' + added +
-      '個の印を付けました。違う所があれば「印の一覧」の「削除」で消せます', false);
+    finish(starts.length + '本のラリーに区切りました', added +
+      '個の印を付けました。違う所があれば「印の一覧」の「削除」で消せます');
     syncRally();
   }).catch((err) => {
-    RallyNav.showScan('解析できませんでした（' + err.message + '）', false);
+    finish('検出できませんでした', err.message);
   });
 }
 

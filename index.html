@@ -167,6 +167,17 @@
 <!-- 手順の案内（stepGuide.js）：次にやることを1つだけ、画面の手前に出す。文は stepGuideData.js -->
 <dialog class="step-guide" id="stepGuide"></dialog>
 
+<!-- ラリーの検出中の画面（scanView.js）。終わるまで手前に出す -->
+<dialog class="step-guide" id="scanDialog">
+  <div class="step-head" id="scanTitle"></div>
+  <progress class="scan-bar" id="scanBar" max="1" value="0"></progress>
+  <p class="step-text" id="scanMessage"></p>
+  <div class="step-buttons">
+    <button id="scanStopBtn">やめる</button>
+    <button class="main" id="scanOkBtn" hidden>OK</button>
+  </div>
+</dialog>
+
 <dialog id="dialog">
   <h3 id="dlgTitle">記録する</h3>
   <div class="dlg-time" id="dlgTime"></div>
@@ -235,6 +246,7 @@
 <script src="js/sceneMemo.js"></script>
 <script src="js/cutDetect.js"></script>
 <script src="js/frameScan.js"></script>
+<script src="js/scanView.js"></script>
 <script src="js/rallyNav.js"></script>
 <script src="js/list.js"></script>
 <script src="js/matchPicker.js"></script>

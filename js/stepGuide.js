@@ -42,7 +42,8 @@ const StepGuide = (() => {
     }
     // 案内の途中で1件記録したら、使い方は分かったので終える
     if (s.recordCount > 0) { finish(s.videoKey); return null; }
-    if (!p.rally) return 'rally';
+    // 自動で区切るを選んだのに印がない（やめた・つなぎ目がなかった）ときは、もう一度選んでもらう
+    if (!p.rally || (p.rally === 'auto' && s.rallyCount === 0)) return 'rally';
     if (!p.side) return p.orientation ? 'side' : 'orientation';
     return 'record';
   }
