@@ -24,6 +24,22 @@ function refresh() {
   syncSide();
   syncMemo();
   syncRally();
+  syncGuide();
+}
+
+// 手順の案内を、今の動画で済んだことに合わせる（サンプルには専用の使い方があるので出さない）
+function syncGuide() {
+  const key = Player.hasVideo() ? Clips.currentKey() : null;
+  const isSample = !!key && key.startsWith(SampleData.fileName + '|');
+  // サンプルから自分の動画に切り替えたら、サンプルの使い方はしまう（案内が2つ並ばないように）
+  if (key && !isSample) Sample.hideGuide();
+  StepGuide.render({
+    videoKey: key,
+    hidden: isSample,
+    rallyCount: key ? Matches.rallyStarts(key).length : 0,
+    sideCount: key ? Matches.sideChanges(key).length : 0,
+    recordCount: key ? Matches.records().filter((r) => r.videoKey === key).length : 0,
+  });
 }
 
 // ラリーの印の表示を、今の動画・今の時間に合わせる
@@ -105,7 +121,7 @@ Clips.init({
     const draftKey = RecordDialog.draftVideoKey();
     if (draftKey && draftKey !== Clips.currentKey()) RecordDialog.discard();
     refreshVideoList();
-    if (file) { Player.load(file); return; }
+    if (file) { Player.load(file); syncGuide(); return; }
     // この試合の動画がまだ選ばれていないときは、選び直しを案内する
     const n = Clips.total();
     Player.clear(n > 0 ? 'この試合の動画（' + n + '本）を選ぶと再生できます<br>（まとめて選べます。順番はばらばらで大丈夫）' : '');
@@ -186,18 +202,22 @@ MatchPicker.init((id) => {
 // コート図の向き（縦／横、自分をどちら側に置くか）
 const courtView = CourtView.init({
   onOrientation: (view) => Court.setView(view),
-  // 「自分：上／下（横なら左／右）」を押したら、今の動画の今の時間をコートチェンジとして覚える
-  onSidePressed(side) {
-    const key = Clips.currentKey();
-    if (key) saved(Matches.setSide(key, Player.currentTime(), side));
-    else CourtView.showSide(side); // 動画がないときは、向きを変えるだけ
-    syncSide(true);
-  },
+  onSidePressed: setMeSide,
   onRemoveChange(index) {
     saved(Matches.removeSideChange(Clips.currentKey(), index));
     syncSide(true);
+    syncGuide();
   },
 });
+
+// 「自分：上／下（横なら左／右）」を押したら、今の動画の今の時間をコートチェンジとして覚える
+function setMeSide(side) {
+  const key = Clips.currentKey();
+  if (key) saved(Matches.setSide(key, Player.currentTime(), side));
+  else CourtView.showSide(side); // 動画がないときは、向きを変えるだけ
+  syncSide(true);
+  syncGuide();
+}
 // ラリーの印：今の時間に印を付ける／前・次のラリーの始まりへ飛ぶ／印を消す
 RallyNav.init({
   onMark() {
@@ -205,6 +225,7 @@ RallyNav.init({
     if (!key) return;
     saved(Matches.addRallyStart(key, Player.currentTime()));
     syncRally();
+    syncGuide();
   },
   onJump(time) {
     Playlist.stop();
@@ -214,43 +235,9 @@ RallyNav.init({
     if (!confirm('このラリーの印を消しますか？')) return;
     saved(Matches.removeRallyStart(Clips.currentKey(), index));
     syncRally();
+    syncGuide();
   },
-  // つなぎ目で区切る：切り取ってつないだ動画のつなぎ目を探し、各ラリーの始まりに印を付ける
-  onCutScan() {
-    const key = Clips.currentKey();
-    const url = Player.sourceUrl();
-    if (!key || !url) return;
-    const opt = Settings.cutDetect;
-    const progress = (p) => RallyNav.showScan('解析中 ' + Math.round(p * 100) + '%（動画の長さの1/' +
-      opt.scanRate + 'ほどかかります）。解析中はこの画面のままにしてください（離れても、戻れば続きから再開します）', true);
-    progress(0);
-    FrameScan.scan(url, opt.scanRate, progress).then((changes) => {
-      if (!changes) { RallyNav.showScan('', false); return; } // やめた
-      const cuts = CutDetect.findCuts(changes, opt);
-      if (cuts.length === 0) {
-        RallyNav.showScan('つなぎ目が見つかりませんでした（切り取ってつないだ動画ではないかもしれません）', false);
-        return;
-      }
-      // 最初のラリーは動画の始まりから。あとはつなぎ目ごとに1本
-      const starts = [0].concat(cuts);
-      let ok = true;
-      // すでに印があれば、置き換えるか聞く（何度も押したとき、印が二重にならないように）
-      const existing = Matches.rallyStarts(key).length;
-      if (existing > 0 && confirm('今ある印（' + existing + '個）を消して、つなぎ目の印（' + starts.length +
-        '個）に置き換えますか？\n\nキャンセルすると、今の印は残して、足りない所にだけ足します。')) {
-        ok = Matches.clearRallyStarts(key);
-      }
-      const before = Matches.rallyStarts(key).length;
-      starts.forEach((t) => { ok = Matches.addRallyStart(key, t); });
-      saved(ok);
-      const added = Matches.rallyStarts(key).length - before;
-      RallyNav.showScan(starts.length + '本のラリーに区切り、' + added +
-        '個の印を付けました。違う所があれば「印の一覧」の「削除」で消せます', false);
-      syncRally();
-    }).catch((err) => {
-      RallyNav.showScan('解析できませんでした（' + err.message + '）', false);
-    });
-  },
+  onCutScan: cutScan,
   onCutScanStop() {
     FrameScan.stop();
     RallyNav.showScan('', false);
@@ -258,6 +245,44 @@ RallyNav.init({
   starts: () => (Clips.currentKey() ? Matches.rallyStarts(Clips.currentKey()) : []),
   now: Player.currentTime,
 });
+
+// つなぎ目で区切る：切り取ってつないだ動画のつなぎ目を探し、各ラリーの始まりに印を付ける
+//   「つなぎ目で区切る」のほか、手順の案内の「はい → 自動で区切る」からも使う
+function cutScan() {
+  const key = Clips.currentKey();
+  const url = Player.sourceUrl();
+  if (!key || !url) return;
+  const opt = Settings.cutDetect;
+  const progress = (p) => RallyNav.showScan('解析中 ' + Math.round(p * 100) + '%（動画の長さの1/' +
+    opt.scanRate + 'ほどかかります）。解析中はこの画面のままにしてください（離れても、戻れば続きから再開します）', true);
+  progress(0);
+  FrameScan.scan(url, opt.scanRate, progress).then((changes) => {
+    if (!changes) { RallyNav.showScan('', false); return; } // やめた
+    const cuts = CutDetect.findCuts(changes, opt);
+    if (cuts.length === 0) {
+      RallyNav.showScan('つなぎ目が見つかりませんでした（切り取ってつないだ動画ではないかもしれません）', false);
+      return;
+    }
+    // 最初のラリーは動画の始まりから。あとはつなぎ目ごとに1本
+    const starts = [0].concat(cuts);
+    let ok = true;
+    // すでに印があれば、置き換えるか聞く（何度も押したとき、印が二重にならないように）
+    const existing = Matches.rallyStarts(key).length;
+    if (existing > 0 && confirm('今ある印（' + existing + '個）を消して、つなぎ目の印（' + starts.length +
+      '個）に置き換えますか？\n\nキャンセルすると、今の印は残して、足りない所にだけ足します。')) {
+      ok = Matches.clearRallyStarts(key);
+    }
+    const before = Matches.rallyStarts(key).length;
+    starts.forEach((t) => { ok = Matches.addRallyStart(key, t); });
+    saved(ok);
+    const added = Matches.rallyStarts(key).length - before;
+    RallyNav.showScan(starts.length + '本のラリーに区切り、' + added +
+      '個の印を付けました。違う所があれば「印の一覧」の「削除」で消せます', false);
+    syncRally();
+  }).catch((err) => {
+    RallyNav.showScan('解析できませんでした（' + err.message + '）', false);
+  });
+}
 
 // 再生位置が変わったら、その時間の向きに合わせる（巻き戻したときも自動で戻る）
 Player.onTimeChange(() => { syncSide(); syncMemo(); syncRally(); });
@@ -323,6 +348,17 @@ RecordList.init({
     saved(Matches.removeRecord(record.id));
     refresh();
   },
+});
+
+// 手順の案内のボタン（文と並びは stepGuideData.js）
+StepGuide.init((button) => {
+  if (button.action === 'chooseVideo') document.getElementById('fileInput').click();
+  if (button.action === 'autoRally') cutScan();
+  if (button.action === 'side') {
+    CourtView.setOrientation(button.orientation);
+    setMeSide(button.side);
+  }
+  if (button.action === 'refresh') syncGuide();
 });
 
 // 「サンプルで試す」：サンプルの試合に記録とラリーの印がまだなければ入れる（中身は sampleData.js）
