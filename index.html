@@ -12,9 +12,6 @@
   <a href="https://badminton-analyzer-delta.vercel.app">公開版のページ</a>で開いてください。</div>
 
 <main>
-  <!-- 手順の案内（stepGuide.js）：次にやることを1つだけ出す。文は stepGuideData.js -->
-  <section class="card step-guide" id="stepGuide" hidden></section>
-
   <!-- 動画エリア -->
   <section class="card">
     <!-- 動画は何本でもまとめて選べる。選んだ順番は関係なく、撮影順に並ぶ -->
@@ -167,6 +164,9 @@
 </main>
 
 <!-- 記録入力ダイアログ -->
+<!-- 手順の案内（stepGuide.js）：次にやることを1つだけ、画面の手前に出す。文は stepGuideData.js -->
+<dialog class="step-guide" id="stepGuide"></dialog>
+
 <dialog id="dialog">
   <h3 id="dlgTitle">記録する</h3>
   <div class="dlg-time" id="dlgTime"></div>

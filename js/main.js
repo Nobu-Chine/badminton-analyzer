@@ -353,7 +353,9 @@ RecordList.init({
 // 手順の案内のボタン（文と並びは stepGuideData.js）
 StepGuide.init((button) => {
   if (button.action === 'chooseVideo') document.getElementById('fileInput').click();
+  if (button.action === 'sample') document.getElementById('sampleBtn').click();
   if (button.action === 'autoRally') cutScan();
+  if (button.action === 'orientation') CourtView.setOrientation(button.orientation);
   if (button.action === 'side') {
     CourtView.setOrientation(button.orientation);
     setMeSide(button.side);
