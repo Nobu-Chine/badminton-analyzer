@@ -1,0 +1,81 @@
+// 手順の案内（stepGuide.js）の文と並び。ステップを増やす・文を変えるときは、このファイルだけ直す。
+// id は stepGuide.js が「済んだかどうか」を見分けるのに使う（video / ready / rally / orientation / side / record）。
+// number が同じものは、同じステップの続きとして出す（「ステップ 3／4」が2回）。
+// buttons の action は main.js が受け取って、その操作をする。
+const StepGuideData = {
+  total: 4,
+  steps: [
+    {
+      id: 'video',
+      number: 1,
+      title: '動画を選ぶ',
+      text: '試合の動画を選んでください',
+      buttons: [
+        { label: '動画を選ぶ', action: 'chooseVideo', main: true },
+        { label: 'サンプルで試す', action: 'sample' },
+      ],
+    },
+    {
+      // 前に使った動画を開いたとき（番号なし）。今の準備の中身は summary で出す
+      id: 'ready',
+      title: 'この動画は準備ができています',
+      text: '前に設定した内容で記録を続けられます',
+      buttons: [
+        { label: 'このまま記録する', action: 'keep', main: true },
+        { label: '準備をやり直す', action: 'redo' },
+      ],
+    },
+    {
+      id: 'rally',
+      number: 2,
+      title: 'ラリーを区切る',
+      text: 'この動画は RallyShot などで、ラリーだけを切り取ってつないだものですか？',
+      buttons: [
+        { label: 'はい → 自動で区切る', action: 'autoRally', main: true },
+        { label: 'いいえ → 自分で区切る', action: 'manualRally' },
+        { label: '区切らない', action: 'skipRally' },
+      ],
+    },
+    {
+      id: 'orientation',
+      number: 3,
+      title: 'コートの向き',
+      text: '動画のコートは、縦と横のどちらに映っていますか？',
+      buttons: [
+        { label: '縦', action: 'orientation', orientation: 'vertical' },
+        { label: '横', action: 'orientation', orientation: 'horizontal' },
+      ],
+    },
+    {
+      id: 'side',
+      number: 3,
+      title: '自分の場所',
+      text: '自分はどちらのコートにいますか？',
+      // 縦か横かで、出すボタンを変える
+      buttonsBy: {
+        vertical: [
+          { label: '上', action: 'side', side: 'left' },
+          { label: '下', action: 'side', side: 'right' },
+        ],
+        horizontal: [
+          { label: '左', action: 'side', side: 'left' },
+          { label: '右', action: 'side', side: 'right' },
+        ],
+      },
+      tip: 'コートチェンジしたら、その場面でコート図の上の「自分」を押して入れ替えます',
+    },
+    {
+      id: 'record',
+      number: 4,
+      title: '記録する',
+      text: '「▶ 再生」を押して、シャトルが落ちたらコート図のその場所をタップします（自動で止まります）',
+      buttons: [{ label: 'はじめる', action: 'finish', main: true }],
+    },
+  ],
+  // 「自分で区切る」を選んだとき、あとのステップに一緒に出す一言
+  manualRallyTip: 'ラリーの始まりで「＋ ラリー開始」を押すと、ラリーごとに飛べます',
+  closeLabel: '案内を閉じる',
+  // 前に使った動画の、今の準備の中身（setup：{ rallyCount, orientation: '縦'|'横', side: '上'|'下'|'左'|'右' }）
+  summary: (setup) => 'ラリー：' + (setup.rallyCount > 0 ? setup.rallyCount + '本に区切り済み' : '区切りなし') +
+    '　／　向き：' + setup.orientation + '・自分が' + setup.side,
+};

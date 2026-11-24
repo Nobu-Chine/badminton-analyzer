@@ -45,5 +45,10 @@ const Sample = (() => {
     };
   }
 
-  return { init };
+  // サンプルの使い方をしまう（自分の動画に切り替えたとき）
+  function hideGuide() {
+    document.getElementById('guide').hidden = true;
+  }
+
+  return { init, hideGuide };
 })();

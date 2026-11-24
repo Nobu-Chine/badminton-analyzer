@@ -62,18 +62,21 @@ const CourtView = (() => {
     handlers = h;
     view = Object.assign(view, Store.load(KEY, {}));
     document.querySelectorAll('[data-orientation]').forEach((b) => {
-      b.onclick = () => {
-        view = Object.assign({}, view, { orientation: b.dataset.orientation });
-        save();
-        render();
-        handlers.onOrientation(view);
-      };
+      b.onclick = () => setOrientation(b.dataset.orientation);
     });
     document.querySelectorAll('[data-me-side]').forEach((b) => {
       b.onclick = () => handlers.onSidePressed(b.dataset.meSide);
     });
     render();
     return view;
+  }
+
+  // 縦／横を切り替える（ボタンのほか、手順の案内からも使う）
+  function setOrientation(orientation) {
+    view = Object.assign({}, view, { orientation });
+    save();
+    render();
+    handlers.onOrientation(view);
   }
 
   // 今の時間の、自分の左右を表示に反映する。変わったら true
@@ -96,5 +99,10 @@ const CourtView = (() => {
     render();
   }
 
-  return { init, get: () => view, showSide, renderChanges };
+  // 今の向きを文字で（手順の案内で使う）：{ orientation: '縦'|'横', side: '上'|'下'|'左'|'右' }
+  function describe() {
+    return { orientation: view.orientation === 'vertical' ? '縦' : '横', side: sideName(view.meSide) };
+  }
+
+  return { init, get: () => view, setOrientation, showSide, renderChanges, describe };
 })();
