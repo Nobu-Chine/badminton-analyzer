@@ -1,8 +1,8 @@
 // コート図：両面コートの描画、タップ位置の変換、記録の点の表示
 // 座標はメートル。ネットが y=0、相手コートは y<0、自分コートは y>0（保存する位置はいつもこの向き）。
 // 見た目の向きだけを変えられる：
-//   縦：自分コートが下（これまでどおり）
-//   横：横から撮った動画と同じ向き。自分コートを左か右に置く
+//   縦：後ろから撮った動画と同じ向き。自分コートを下（meSide: right）か上（left）に置く
+//   横：横から撮った動画と同じ向き。自分コートを右（right）か左（left）に置く
 // 向きを変えても、コートを回して描くだけなので、タップした位置はいつも同じ座標に戻る。
 const Court = (() => {
   const svg = document.getElementById('court');
@@ -32,7 +32,9 @@ const Court = (() => {
   function layout() {
     const lenH = HALF + MARGIN;
     if (view.orientation === 'vertical') {
-      return { transform: '', box: [-MARGIN, -lenH, W + MARGIN * 2, lenH * 2] };
+      // 自分が上のときは、コートの真ん中を中心に半回転させる
+      const transform = view.meSide === 'left' ? 'rotate(180 ' + W / 2 + ' 0)' : '';
+      return { transform, box: [-MARGIN, -lenH, W + MARGIN * 2, lenH * 2] };
     }
     if (view.meSide === 'right') {
       return { transform: 'rotate(-90)', box: [-lenH, -(W + MARGIN), lenH * 2, W + MARGIN * 2] };
@@ -48,8 +50,9 @@ const Court = (() => {
       t.textContent = text;
     };
     if (view.orientation === 'vertical') {
-      put('相手コート', W / 2, -HALF - 0.35);
-      put('自分コート', W / 2, HALF + 0.65);
+      const meTop = view.meSide === 'left';
+      put(meTop ? '自分コート' : '相手コート', W / 2, -HALF - 0.35);
+      put(meTop ? '相手コート' : '自分コート', W / 2, HALF + 0.65);
       return;
     }
     const midY = by + bh / 2 + 0.11;

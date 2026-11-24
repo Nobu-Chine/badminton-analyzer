@@ -103,10 +103,11 @@
         <button data-orientation="vertical">縦</button>
         <button data-orientation="horizontal">横</button>
       </div>
-      <div class="seg" id="meSideRow" hidden>
+      <!-- 文字は向きに合わせて courtView.js が入れる（縦：上／下、横：左／右） -->
+      <div class="seg" id="meSideRow">
         <span>自分</span>
-        <button data-me-side="left">左</button>
-        <button data-me-side="right">右</button>
+        <button data-me-side="left"></button>
+        <button data-me-side="right"></button>
         <small>コートチェンジの場面で押す</small>
       </div>
       <!-- この動画のコートチェンジ（何時から自分がどちら側か）。courtView.js が描く -->

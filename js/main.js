@@ -40,7 +40,7 @@ function syncMemo() {
   SceneMemo.render(Player.hasVideo() ? records : [], Player.currentTime());
 }
 
-// 今の動画・今の時間で、自分が左右どちらにいるかをコート図に反映する（コートチェンジ）
+// 今の動画・今の時間で、自分がどちら側にいるかをコート図に反映する（コートチェンジ）
 //   force：向きが変わっていなくても描き直す
 function syncSide(force = false) {
   const key = Clips.currentKey();
@@ -183,10 +183,10 @@ MatchPicker.init((id) => {
   refresh();
 });
 
-// コート図の向き（縦／横、横のときに自分を左右どちらに置くか）
+// コート図の向き（縦／横、自分をどちら側に置くか）
 const courtView = CourtView.init({
   onOrientation: (view) => Court.setView(view),
-  // 「自分：左／右」を押したら、今の動画の今の時間をコートチェンジとして覚える
+  // 「自分：上／下（横なら左／右）」を押したら、今の動画の今の時間をコートチェンジとして覚える
   onSidePressed(side) {
     const key = Clips.currentKey();
     if (key) saved(Matches.setSide(key, Player.currentTime(), side));
