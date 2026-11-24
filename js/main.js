@@ -39,6 +39,7 @@ function syncGuide() {
     rallyCount: key ? Matches.rallyStarts(key).length : 0,
     sideCount: key ? Matches.sideChanges(key).length : 0,
     recordCount: key ? Matches.records().filter((r) => r.videoKey === key).length : 0,
+    setup: Object.assign({ rallyCount: key ? Matches.rallyStarts(key).length : 0 }, CourtView.describe()),
   });
 }
 

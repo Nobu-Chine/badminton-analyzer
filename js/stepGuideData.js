@@ -1,5 +1,5 @@
 // 手順の案内（stepGuide.js）の文と並び。ステップを増やす・文を変えるときは、このファイルだけ直す。
-// id は stepGuide.js が「済んだかどうか」を見分けるのに使う（video / rally / orientation / side / record）。
+// id は stepGuide.js が「済んだかどうか」を見分けるのに使う（video / ready / rally / orientation / side / record）。
 // number が同じものは、同じステップの続きとして出す（「ステップ 3／4」が2回）。
 // buttons の action は main.js が受け取って、その操作をする。
 const StepGuideData = {
@@ -13,6 +13,16 @@ const StepGuideData = {
       buttons: [
         { label: '動画を選ぶ', action: 'chooseVideo', main: true },
         { label: 'サンプルで試す', action: 'sample' },
+      ],
+    },
+    {
+      // 前に使った動画を開いたとき（番号なし）。今の準備の中身は summary で出す
+      id: 'ready',
+      title: 'この動画は準備ができています',
+      text: '前に設定した内容で記録を続けられます',
+      buttons: [
+        { label: 'このまま記録する', action: 'keep', main: true },
+        { label: '準備をやり直す', action: 'redo' },
       ],
     },
     {
@@ -65,6 +75,7 @@ const StepGuideData = {
   // 「自分で区切る」を選んだとき、あとのステップに一緒に出す一言
   manualRallyTip: 'ラリーの始まりで「＋ ラリー開始」を押すと、ラリーごとに飛べます',
   closeLabel: '案内を閉じる',
-  // 前に済ませたステップを飛ばしたときの一言（numbers：飛ばしたステップの番号）
-  skippedNote: (numbers) => 'この動画は、前にステップ' + numbers.join('・') + 'を済ませているので飛ばしました',
+  // 前に使った動画の、今の準備の中身（setup：{ rallyCount, orientation: '縦'|'横', side: '上'|'下'|'左'|'右' }）
+  summary: (setup) => 'ラリー：' + (setup.rallyCount > 0 ? setup.rallyCount + '本に区切り済み' : '区切りなし') +
+    '　／　向き：' + setup.orientation + '・自分が' + setup.side,
 };

@@ -99,5 +99,10 @@ const CourtView = (() => {
     render();
   }
 
-  return { init, get: () => view, setOrientation, showSide, renderChanges };
+  // 今の向きを文字で（手順の案内で使う）：{ orientation: '縦'|'横', side: '上'|'下'|'左'|'右' }
+  function describe() {
+    return { orientation: view.orientation === 'vertical' ? '縦' : '横', side: sideName(view.meSide) };
+  }
+
+  return { init, get: () => view, setOrientation, showSide, renderChanges, describe };
 })();
