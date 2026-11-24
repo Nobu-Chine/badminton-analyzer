@@ -42,8 +42,8 @@ const StepGuideData = {
       title: 'コートの向き',
       text: '動画のコートは、縦と横のどちらに映っていますか？',
       buttons: [
-        { label: '縦（後ろから撮影）', action: 'orientation', orientation: 'vertical' },
-        { label: '横（横から撮影）', action: 'orientation', orientation: 'horizontal' },
+        { label: '縦', action: 'orientation', orientation: 'vertical' },
+        { label: '横', action: 'orientation', orientation: 'horizontal' },
       ],
     },
     {
