@@ -11,6 +11,7 @@ const StepGuideData = {
       number: 1,
       title: '動画を選ぶ',
       text: '試合の動画を選んでください',
+      tip: '1試合を何本かに分けて撮ったときは、まとめて選べます（あとから「＋ 同じ試合の続きの動画を足す」で足すこともできます）',
       buttons: [
         { label: '動画を選ぶ', action: 'chooseVideo', main: true },
         { label: 'サンプルで試す', action: 'sample' },
