@@ -271,7 +271,7 @@ function cutScan() {
     if (!changes) { RallyNav.showScan('', false); ScanView.hide(); return; } // やめた
     const cuts = CutDetect.findCuts(changes, opt);
     if (cuts.length === 0) {
-      finish('つなぎ目が見つかりませんでした', '切り取ってつないだ動画ではないかもしれません。ラリーの始まりで「＋ ラリー開始」を押すと、自分で区切れます');
+      finish('ラリーが見つかりませんでした', 'ラリーの場面だけをつないだ動画ではないかもしれません。ラリーの始まりで「＋ ラリー開始」を押すと、自分で印を付けられます');
       return;
     }
     // 最初のラリーは動画の始まりから。あとはつなぎ目ごとに1本
@@ -287,11 +287,11 @@ function cutScan() {
     starts.forEach((t) => { ok = Matches.addRallyStart(key, t); });
     saved(ok);
     const added = Matches.rallyStarts(key).length - before;
-    finish(starts.length + '本のラリーに区切りました', added +
+    finish(starts.length + '本のラリーが見つかりました', added +
       '個の印を付けました。違う所があれば「印の一覧」の「削除」で消せます');
     syncRally();
   }).catch((err) => {
-    finish('検出できませんでした', err.message);
+    finish('ラリーを探せませんでした', err.message);
   });
 }
 
@@ -320,8 +320,9 @@ RecordDialog.init({
     saved(Matches.addRecord(record));
     refresh();
     // 記録したら、動画に戻って次を見る。次のラリーの印があればそこへ飛び、なければ続きを再生する
+    //   ラリーの印を隠しているときは、見えない印へ飛ばない（続きを再生する）
     Player.reveal();
-    const next = RallyNav.nextStart(Matches.rallyStarts(record.videoKey), record.time);
+    const next = Settings.showRallyTools ? RallyNav.nextStart(Matches.rallyStarts(record.videoKey), record.time) : null;
     if (next !== null && record.videoKey === Clips.currentKey()) Player.seekAndPlay(next);
     else Player.play();
   },

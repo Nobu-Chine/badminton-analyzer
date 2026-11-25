@@ -1,9 +1,10 @@
 // 手順の案内（stepGuide.js）の文と並び。ステップを増やす・文を変えるときは、このファイルだけ直す。
 // id は stepGuide.js が「済んだかどうか」を見分けるのに使う（video / ready / rally / orientation / side / record）。
-// number が同じものは、同じステップの続きとして出す（「ステップ 3／4」が2回）。
+// number は並び順。同じ number は同じステップの続きとして出す（「ステップ 2／3」が2回）。
+//   画面に出す番号と全体の数は、出すステップだけで数え直す（ラリーのステップを隠しても 1,2,3 になる）
+// rallyTools: true のステップは、settings.js の showRallyTools が true のときだけ出す。
 // buttons の action は main.js が受け取って、その操作をする。
 const StepGuideData = {
-  total: 4,
   steps: [
     {
       id: 'video',
@@ -28,12 +29,15 @@ const StepGuideData = {
     {
       id: 'rally',
       number: 2,
-      title: 'ラリーを区切る',
-      text: 'この動画は RallyShot などで、ラリーだけを切り取ってつないだものですか？',
+      rallyTools: true,
+      title: '動画の中のラリーを見つける',
+      // 何のためのステップか（質問の前に出す）
+      lead: 'ラリー（1点ごとのやりとり）の始まりを見つけておくと、「次のラリー ▶」で1点ずつ飛ばして見られます',
+      text: 'この動画は、ラリーの合間（シャトルを拾う時間など）をカットして、ラリーの場面だけをつないだものですか？',
       buttons: [
-        { label: 'はい → 自動で区切る', action: 'autoRally', main: true },
-        { label: 'いいえ → 自分で区切る', action: 'manualRally' },
-        { label: '区切らない', action: 'skipRally' },
+        { label: 'はい → 自動で見つける', action: 'autoRally', main: true },
+        { label: 'いいえ → 見ながら自分で印を付ける', action: 'manualRally' },
+        { label: 'あとにする', action: 'skipRally' },
       ],
     },
     {
@@ -72,10 +76,12 @@ const StepGuideData = {
       buttons: [{ label: 'はじめる', action: 'finish', main: true }],
     },
   ],
-  // 「自分で区切る」を選んだとき、あとのステップに一緒に出す一言
+  // 「自分で印を付ける」を選んだとき、あとのステップに一緒に出す一言
   manualRallyTip: 'ラリーの始まりで「＋ ラリー開始」を押すと、ラリーごとに飛べます',
   closeLabel: '案内を閉じる',
-  // 前に使った動画の、今の準備の中身（setup：{ rallyCount, orientation: '縦'|'横', side: '上'|'下'|'左'|'右' }）
-  summary: (setup) => 'ラリー：' + (setup.rallyCount > 0 ? setup.rallyCount + '本に区切り済み' : '区切りなし') +
-    '　／　向き：' + setup.orientation + '・自分が' + setup.side,
+  // 前に使った動画の、今の準備の中身
+  //   setup：{ rallyCount, orientation: '縦'|'横', side: '上'|'下'|'左'|'右' } / showRally：ラリーのことも書くか
+  summary: (setup, showRally) => (showRally
+    ? 'ラリー：' + (setup.rallyCount > 0 ? setup.rallyCount + '本見つけ済み' : 'まだ見つけていない') + '　／　' : '') +
+    '向き：' + setup.orientation + '・自分が' + setup.side,
 };

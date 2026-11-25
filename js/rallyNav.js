@@ -48,7 +48,7 @@ const RallyNav = (() => {
     if (key === shownKey) return;
     shownKey = key;
 
-    nav.hidden = !hasVideo;
+    nav.hidden = !hasVideo || !Settings.showRallyTools; // ラリーの印は settings.js で隠せる
     nextBtn.disabled = nextStart(starts, time) === null;
     prevBtn.disabled = prevStart(starts, time) === null;
     label.textContent = starts.length === 0

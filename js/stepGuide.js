@@ -1,6 +1,6 @@
 // 手順の案内：「次にやること」を1つだけ、画面の手前（重ねた小さな画面）に出し、済んだら自動で次へ進む。
 // 文と並びは stepGuideData.js。ボタンを押したときの操作は受け取った関数に任せる。
-//   初めての動画：ステップ2→3→4と順に聞く
+//   初めての動画：動画を選んだあとのステップから順に聞く
 //   前に使った動画：「準備ができています（ラリー24本・縦・自分が下）」を出し、このまま進むか、やり直すかを選ぶ
 // どこまで進んだかは、動画ごとにこの端末へ保存する。
 const StepGuide = (() => {
@@ -37,15 +37,25 @@ const StepGuide = (() => {
     if (s.hidden) return null;
     const p = progressOf(s.videoKey);
     if (!p.active) {
-      if (!isKnown(s)) { mark(s.videoKey, { active: true }, true); return 'rally'; } // 初めての動画
-      return answered.has(s.videoKey) ? null : 'ready';
+      if (isKnown(s)) return answered.has(s.videoKey) ? null : 'ready';
+      mark(s.videoKey, { active: true }, true); // 初めての動画：ここから順に聞く
     }
     // 案内の途中で1件記録したら、使い方は分かったので終える
     if (s.recordCount > 0) { finish(s.videoKey); return null; }
-    // 自動で区切るを選んだのに印がない（やめた・つなぎ目がなかった）ときは、もう一度選んでもらう
-    if (!p.rally || (p.rally === 'auto' && s.rallyCount === 0)) return 'rally';
-    if (!p.side) return p.orientation ? 'side' : 'orientation';
+    // 自動で見つけるを選んだのに印がない（やめた・見つからなかった）ときは、もう一度選んでもらう
+    const rally = progressOf(s.videoKey).rally;
+    if (Settings.showRallyTools && (!rally || (rally === 'auto' && s.rallyCount === 0))) return 'rally';
+    const now = progressOf(s.videoKey);
+    if (!now.side) return now.orientation ? 'side' : 'orientation';
     return 'record';
+  }
+
+  // 出すステップだけで数えた「何番目か」と「全部でいくつか」（ラリーのステップを隠しても 1,2,3 になる）
+  function numbering(data) {
+    const groups = [...new Set(StepGuideData.steps
+      .filter((x) => x.number && (!x.rallyTools || Settings.showRallyTools))
+      .map((x) => x.number))].sort((a, b) => a - b);
+    return { index: groups.indexOf(data.number) + 1, total: groups.length };
   }
 
   function finish(videoKey) {
@@ -66,12 +76,12 @@ const StepGuide = (() => {
     const data = StepGuideData.steps.find((x) => x.id === step);
     const p = progressOf(s.videoKey);
 
-    add(box, 'div', 'step-head', data.number
-      ? 'ステップ ' + data.number + '／' + StepGuideData.total + '　' + data.title
-      : data.title);
+    const n = numbering(data);
+    add(box, 'div', 'step-head', data.number ? 'ステップ ' + n.index + '／' + n.total + '　' + data.title : data.title);
+    if (data.lead) add(box, 'p', 'step-lead', data.lead);
     add(box, 'p', 'step-text', data.text);
     // 前に使った動画：今の準備の中身を見せる
-    if (step === 'ready') add(box, 'p', 'step-summary', StepGuideData.summary(s.setup));
+    if (step === 'ready') add(box, 'p', 'step-summary', StepGuideData.summary(s.setup, Settings.showRallyTools));
 
     const buttons = data.buttonsBy ? data.buttonsBy[p.orientation] : data.buttons;
     const row = add(box, 'div', 'step-buttons');
