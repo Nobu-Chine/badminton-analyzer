@@ -107,7 +107,7 @@ Clips.init({
       refresh();
       return;
     }
-    // 「この試合に動画を追加」：別の試合に入っている動画は足さず、理由を伝える
+    // 「同じ試合の続きの動画を足す」：別の試合に入っている動画は足さず、理由を伝える
     const result = Matches.addVideos(videos);
     saved(result.ok);
     syncClips(result.added.length > 0 ? result.added[0].key : Clips.currentKey());

@@ -13,7 +13,7 @@ const VideoList = (() => {
   // videos：[{ key, name }]（撮影順）
   // isLoaded(key)：今ページで選ばれているか / currentKey：再生中の動画 / hasMatch：試合を選んでいるか
   function render(videos, { isLoaded, currentKey, hasMatch }) {
-    // 足す先の試合がないときは「＋ この試合に動画を追加」を出さない
+    // 足す先の試合がないときは「＋ 同じ試合の続きの動画を足す」を出さない
     document.getElementById('addVideoLabel').hidden = !hasMatch;
     box.hidden = videos.length === 0;
     summary.textContent = 'この試合の動画（' + videos.length + '本）';
