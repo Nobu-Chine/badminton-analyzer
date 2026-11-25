@@ -320,8 +320,9 @@ RecordDialog.init({
     saved(Matches.addRecord(record));
     refresh();
     // 記録したら、動画に戻って次を見る。次のラリーの印があればそこへ飛び、なければ続きを再生する
+    //   ラリーの印を隠しているときは、見えない印へ飛ばない（続きを再生する）
     Player.reveal();
-    const next = RallyNav.nextStart(Matches.rallyStarts(record.videoKey), record.time);
+    const next = Settings.showRallyTools ? RallyNav.nextStart(Matches.rallyStarts(record.videoKey), record.time) : null;
     if (next !== null && record.videoKey === Clips.currentKey()) Player.seekAndPlay(next);
     else Player.play();
   },

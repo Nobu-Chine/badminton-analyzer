@@ -23,7 +23,10 @@ const Settings = {
   frameSeconds: 1 / 30,          // 「1コマ」で進む・戻る秒数（30コマ/秒の動画で1コマ）
 
   // ラリーの印（rallyNav.js）
-  rallyMinGap: 1,       // これより近い印は同じ印とみなす（秒）
+  // 画面に出すか。false の間は「前のラリー／＋ ラリー開始／次のラリー」「ラリーを自動で見つける」「印の一覧」と
+  // 手順の案内の「ラリーを見つける」を出さない（分析には必須ではないので、今は隠している。true で戻る）
+  showRallyTools: false,
+  rallyMinGap: 1,      // これより近い印は同じ印とみなす（秒）
   rallyBackSeconds: 1.5, // 「前のラリー」：ラリーの始まりからこれ以上たっていたら、今のラリーの始まりに戻る
 
   // つなぎ目で区切る（cutDetect.js / frameScan.js）。RallyShot などで切り取ってつないだ動画用
