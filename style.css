@@ -1,4 +1,7 @@
 * { box-sizing: border-box; }
+/* スマホで同じ所を素早く2回押したとき（1コマ送りの連打など）に、画面が拡大されないようにする。
+   2本指で広げる拡大はそのまま使える */
+html, body, button, input, select, label, summary, svg, video { touch-action: manipulation; }
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", sans-serif;
