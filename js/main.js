@@ -395,6 +395,11 @@ Sample.init({
     SampleData.rallies.forEach((t) => { ok = Matches.addRallyStart(key, t); });
     saved(ok);
     refresh();
+    // コート図の向きを、サンプルの動画に合わせる（縦・自分が上 など）
+    if (SampleData.view) {
+      CourtView.setOrientation(SampleData.view.orientation);
+      setMeSide(SampleData.view.meSide);
+    }
   },
 });
 
