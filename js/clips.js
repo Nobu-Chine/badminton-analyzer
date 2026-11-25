@@ -41,7 +41,7 @@ const Clips = (() => {
   }
 
   // onFilesChosen(videos, mode)：ファイルが選ばれたとき。videos は [{ key, name, lastModified }]（撮影順）
-  //   mode は 'open'（動画を選ぶ）か 'add'（この試合に動画を追加）
+  //   mode は 'open'（動画を選ぶ）か 'add'（同じ試合の続きの動画を足す）
   // onChange(file)：再生する動画が変わったとき（なくなったら null）
   function init({ onFilesChosen, onChange }) {
     onClipChange = onChange;
