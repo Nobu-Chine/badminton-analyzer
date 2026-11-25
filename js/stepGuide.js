@@ -69,6 +69,7 @@ const StepGuide = (() => {
     add(box, 'div', 'step-head', data.number
       ? 'ステップ ' + data.number + '／' + StepGuideData.total + '　' + data.title
       : data.title);
+    if (data.lead) add(box, 'p', 'step-lead', data.lead);
     add(box, 'p', 'step-text', data.text);
     // 前に使った動画：今の準備の中身を見せる
     if (step === 'ready') add(box, 'p', 'step-summary', StepGuideData.summary(s.setup));

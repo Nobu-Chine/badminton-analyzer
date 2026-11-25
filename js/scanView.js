@@ -20,7 +20,7 @@ const ScanView = (() => {
 
   // 検出中（p：0〜1、note：添える一言）
   function progress(p, note) {
-    title.textContent = 'ラリーを検出中… ' + Math.round(p * 100) + '%';
+    title.textContent = 'ラリーを探しています… ' + Math.round(p * 100) + '%';
     bar.hidden = false;
     bar.value = p;
     message.textContent = note;

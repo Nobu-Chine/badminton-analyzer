@@ -28,12 +28,14 @@ const StepGuideData = {
     {
       id: 'rally',
       number: 2,
-      title: 'ラリーを区切る',
-      text: 'この動画は RallyShot などで、ラリーだけを切り取ってつないだものですか？',
+      title: '動画の中のラリーを見つける',
+      // 何のためのステップか（質問の前に出す）
+      lead: 'ラリー（1点ごとのやりとり）の始まりを見つけておくと、「次のラリー ▶」で1点ずつ飛ばして見られます',
+      text: 'この動画は RallyShot などで、ラリーの場面だけをつないだものですか？',
       buttons: [
-        { label: 'はい → 自動で区切る', action: 'autoRally', main: true },
-        { label: 'いいえ → 自分で区切る', action: 'manualRally' },
-        { label: '区切らない', action: 'skipRally' },
+        { label: 'はい → 自動で見つける', action: 'autoRally', main: true },
+        { label: 'いいえ → 見ながら自分で印を付ける', action: 'manualRally' },
+        { label: 'あとにする', action: 'skipRally' },
       ],
     },
     {
@@ -72,10 +74,10 @@ const StepGuideData = {
       buttons: [{ label: 'はじめる', action: 'finish', main: true }],
     },
   ],
-  // 「自分で区切る」を選んだとき、あとのステップに一緒に出す一言
+  // 「自分で印を付ける」を選んだとき、あとのステップに一緒に出す一言
   manualRallyTip: 'ラリーの始まりで「＋ ラリー開始」を押すと、ラリーごとに飛べます',
   closeLabel: '案内を閉じる',
   // 前に使った動画の、今の準備の中身（setup：{ rallyCount, orientation: '縦'|'横', side: '上'|'下'|'左'|'右' }）
-  summary: (setup) => 'ラリー：' + (setup.rallyCount > 0 ? setup.rallyCount + '本に区切り済み' : '区切りなし') +
+  summary: (setup) => 'ラリー：' + (setup.rallyCount > 0 ? setup.rallyCount + '本見つけ済み' : 'まだ見つけていない') +
     '　／　向き：' + setup.orientation + '・自分が' + setup.side,
 };
