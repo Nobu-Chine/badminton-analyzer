@@ -80,6 +80,8 @@ const StepGuideData = {
   // 「自分で印を付ける」を選んだとき、あとのステップに一緒に出す一言
   manualRallyTip: 'ラリーの始まりで「＋ ラリー開始」を押すと、ラリーごとに飛べます',
   closeLabel: '案内を閉じる',
+  backLabel: '← 前に戻る',
+  keepVideoLabel: '今の動画のまま進む →',
   // 前に使った動画の、今の準備の中身
   //   setup：{ rallyCount, orientation: '縦'|'横', side: '上'|'下'|'左'|'右' } / showRally：ラリーのことも書くか
   summary: (setup, showRally) => (showRally
