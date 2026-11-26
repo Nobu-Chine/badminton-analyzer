@@ -140,7 +140,10 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
   flex: 1; padding: 12px 0; border: none; border-radius: 10px;
   background: #e3ece7; color: #1f6f4a; font-size: 15px; font-weight: bold; cursor: pointer;
 }
-.controls #playBtn { flex: 1.4; background: #1f6f4a; color: #fff; }
+.controls #playBtn { flex: 1.3; background: #1f6f4a; color: #fff; }
+/* 再生の列は4つ並ぶので、5秒送りは細めに、「ここで記録」は目立つ色にする */
+.controls #backBtn, .controls #fwdBtn { flex: 0.8; }
+.controls #recordHereBtn { flex: 1.4; background: #fff4d6; color: #8a5a00; }
 /* スマホ・タブレット：再生の列を画面の下に固定（縦長の動画でも、コート図を見ながらでも押せる）
    PC は動画の横に並ぶので固定しない。1コマ送りも一緒に固定する */
 /* 画面の下に固定する部分の高さ（ページ下の余白と「記録の続きに戻る」の位置に使う） */

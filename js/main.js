@@ -298,6 +298,14 @@ function cutScan() {
 // 再生位置が変わったら、その時間の向きに合わせる（巻き戻したときも自動で戻る）
 Player.onTimeChange(() => { syncSide(); syncMemo(); syncRally(); });
 
+// 「ここで記録 ↓」：シャトルが落ちた瞬間に押すと、止めてコート図まで移動する（あとはコートをタップするだけ）
+//   保存すると、今までどおり動画の所に戻って続きを再生する
+document.getElementById('recordHereBtn').onclick = () => {
+  if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
+  Player.pause();
+  Court.reveal();
+};
+
 Court.init((x, y) => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
   // 再生中にタップしたら、その場で止めて記録する（「止めてから」と覚えておかなくていいように）
