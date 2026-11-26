@@ -10,6 +10,7 @@ const StepGuide = (() => {
   let progress = Store.load(KEY, {});
   let closedWithoutVideo = false; // 動画を選ぶ前に閉じたら、このページを開いている間は出さない
   const answered = new Set(); // このページで「準備ができています」に答えた動画
+  const pickAgain = new Set(); // 「前に戻る」でステップ1（動画を選ぶ）まで戻った動画
   let onAction = null;
   let shownKey = ''; // 同じ内容なら描き直さない（再生中は何度も呼ばれるため）
   let current = null; // 今出している状態（閉じるときに使う）
@@ -35,6 +36,7 @@ const StepGuide = (() => {
   function stepFor(s) {
     if (!s.videoKey) return closedWithoutVideo ? null : 'video';
     if (s.hidden) return null;
+    if (pickAgain.has(s.videoKey)) return 'video';
     const p = progressOf(s.videoKey);
     if (!p.active) {
       if (isKnown(s)) return answered.has(s.videoKey) ? null : 'ready';
@@ -97,12 +99,40 @@ const StepGuide = (() => {
       add(box, 'p', 'step-tip', StepGuideData.manualRallyTip);
     }
 
-    const close = add(box, 'button', 'link-btn step-close', StepGuideData.closeLabel);
+    // 下の段：「← 前に戻る」（戻れるときだけ）と「案内を閉じる」
+    const foot = add(box, 'div', 'step-foot');
+    if (canGoBack(step, s)) {
+      const back = add(foot, 'button', 'link-btn', StepGuideData.backLabel);
+      back.onclick = () => goBack(step, s.videoKey);
+    }
+    // ステップ1まで戻ってきたときは、選び直さずに今の動画のまま進むこともできる
+    if (step === 'video' && pickAgain.has(s.videoKey)) {
+      const keep = add(foot, 'button', 'link-btn', StepGuideData.keepVideoLabel);
+      keep.onclick = () => { pickAgain.delete(s.videoKey); onAction({ action: 'refresh' }); };
+    }
+    const close = add(foot, 'button', 'link-btn', StepGuideData.closeLabel);
     close.onclick = closeGuide;
   }
 
+  // 前のステップに戻れるか（動画を選ぶ前・「準備ができています」・選び直し中のステップ1では戻らない）
+  function canGoBack(step, s) {
+    return !!s.videoKey && step !== 'video' && step !== 'ready';
+  }
+
+  // 1つ前のステップに戻す（そのステップで選んだことを取り消して、もう一度聞く）
+  function goBack(step, videoKey) {
+    if (step === 'record') mark(videoKey, { side: false });
+    if (step === 'side') mark(videoKey, { orientation: null });
+    if (step === 'orientation') {
+      if (Settings.showRallyTools) mark(videoKey, { rally: null }); // ラリーのステップへ
+      else pickAgain.add(videoKey); // ステップ1（動画を選ぶ）へ
+    }
+    if (step === 'rally') pickAgain.add(videoKey);
+    onAction({ action: 'refresh' });
+  }
+
   function closeGuide() {
-    if (current && current.videoKey) finish(current.videoKey);
+    if (current && current.videoKey) { pickAgain.delete(current.videoKey); finish(current.videoKey); }
     else closedWithoutVideo = true;
     onAction({ action: 'refresh' });
   }
@@ -117,7 +147,10 @@ const StepGuide = (() => {
     if (a === 'side') mark(videoKey, { side: true });
     if (a === 'finish' || a === 'keep') finish(videoKey);
     if (a === 'redo') mark(videoKey, { active: true }, true); // ステップ2から聞き直す
-    if (a === 'chooseVideo' || a === 'sample') closedWithoutVideo = true; // 選ぶ画面を開くので、いったんしまう
+    if (a === 'chooseVideo' || a === 'sample') {
+      closedWithoutVideo = true; // 選ぶ画面を開くので、いったんしまう
+      pickAgain.delete(videoKey); // 選び直さなかったときは、今の動画の続きのステップに戻る
+    }
     onAction(button);
     onAction({ action: 'refresh' });
   }
