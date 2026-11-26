@@ -141,7 +141,7 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 /* スマホ・タブレット：再生の列を画面の下に固定（縦長の動画でも、コート図を見ながらでも押せる）
    PC は動画の横に並ぶので固定しない。1コマ送りも一緒に固定する */
 /* 画面の下に固定する部分の高さ（ページ下の余白と「記録の続きに戻る」の位置に使う） */
-:root { --dock-h: 124px; }
+:root { --dock-h: 134px; }
 @media (max-width: 899px) {
   .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
     padding: 8px 12px calc(4px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96);
@@ -158,8 +158,9 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 .rate-row button.selected { background: #1f6f4a; border-color: #1f6f4a; color: #fff; }
 .fine-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
 .fine-row input { flex: 1; min-width: 0; }
-.fine-row button { padding: 7px 8px; border: 1px solid #cfd8d3; border-radius: 8px; background: #fff;
-  color: #1f6f4a; font-size: 13px; white-space: nowrap; cursor: pointer; }
+/* 1コマ送りはよく連打するので、再生の列と同じくらい大きくして押しやすくする */
+.fine-row button { min-width: 96px; padding: 12px 14px; border: 1px solid #cfd8d3; border-radius: 10px; background: #fff;
+  color: #1f6f4a; font-size: 15px; font-weight: bold; white-space: nowrap; cursor: pointer; }
 .fine-note { min-height: 1.4em; text-align: center; font-size: 12px; color: #555; margin-top: 2px; font-variant-numeric: tabular-nums; }
 .tap-hint { margin: 4px 0 6px; text-align: center; font-size: 13px; color: #1f6f4a; font-weight: bold; }
 .hint { font-size: 12px; color: #777; text-align: center; margin: 6px 0 0; }
