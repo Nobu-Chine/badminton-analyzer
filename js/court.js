@@ -119,5 +119,10 @@ const Court = (() => {
     });
   }
 
-  return { init, setView, drawDots };
+  // コート図が画面に入るまでスクロールする（上の「タップして記録」の説明から見えるように）
+  function reveal() {
+    document.getElementById('tapHint').scrollIntoView({ block: 'start' });
+  }
+
+  return { init, setView, drawDots, reveal };
 })();
