@@ -158,13 +158,14 @@ Backup.init({
 });
 StatsView.init({
   onScopeChange: refresh,
-  // 集計の棒を押したら、その場面だけに絞り込んで、記録一覧を見せる
+  // 集計の棒を押したら、その場面だけに絞り込んで、すぐに順に再生する（動画まで移動）
+  //   動画がまだ選ばれていないときは、絞り込んだ記録一覧を見せる
   onSelect(choice) {
     Playlist.stop();
     RecordFilter.set(Stats.filterFor(choice, { zoneOf: Rules.zone }), choice.description);
     Tabs.select('list');
     refresh();
-    RecordFilter.reveal();
+    if (!playFiltered()) RecordFilter.reveal();
   },
 });
 
@@ -177,14 +178,18 @@ RecordFilter.init({
   // 絞り込んだ場面を順に再生（再生中にもう一度押すと止める）
   onPlay() {
     if (Playlist.isPlaying()) { Playlist.stop(); return; }
-    if (!Playlist.play(RecordFilter.apply(Matches.records()))) {
-      alert('この場面の動画がまだ選ばれていません。「動画を選ぶ」で選んでください');
-    } else {
-      Player.reveal(); // 始めたときだけ動画まで移動（途中で一覧を見ても引き戻さない）
-    }
-    refresh();
+    playFiltered();
   },
 });
+
+// 絞り込んだ場面を順に再生する。流せたら true（集計の棒と「▶ 順に再生」の両方から使う）
+function playFiltered() {
+  const ok = Playlist.play(RecordFilter.apply(Matches.records()));
+  if (!ok) alert('この場面の動画がまだ選ばれていません。「動画を選ぶ」で選んでください');
+  else Player.reveal(); // 始めたときだけ動画まで移動（途中で一覧を見ても引き戻さない）
+  refresh();
+  return ok;
+}
 
 Playlist.init({
   start: playRecord,
