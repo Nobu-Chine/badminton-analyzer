@@ -34,11 +34,13 @@ const RecordDialog = (() => {
           draft[key] = draft[key] === label ? null : label;
           clearInactive();
           renderChoices();
-          // 新しく出てきた項目が画面の外なら、見えるところまで動かす
+          // 新しく出てきた項目（「甘い球を上げた」→「甘かった球」など）を、画面の真ん中まで動かす
+          //   端にぎりぎり見えるだけだと結局スクロールが要るので、真ん中に出す。
+          //   なめらかに動かす指定は iPhone で動かないことがあったので、すぐ移動する
           const appeared = inactive.find((k) => !rules.inactiveKeys(draft).includes(k));
           if (appeared) {
             document.querySelector('.choices[data-key=' + appeared + ']').closest('.group')
-              .scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              .scrollIntoView({ block: 'center' });
           }
         };
         box.appendChild(btn);
