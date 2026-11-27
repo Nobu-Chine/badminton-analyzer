@@ -198,6 +198,14 @@ Playlist.init({
   ended: Player.isEnded,
   pause: Player.pause,
   onChange: refresh,
+  // 最後まで流し終えたら、始めた所（集計の、押した棒・文のあたり）に戻る
+  //   記録一覧の絞り込みは残すので、あとで1件ずつ見直せる
+  onFinished(count) {
+    Tabs.select('stats');
+    refresh();
+    StatsView.revealPicked();
+    Toast.show(count + '件の再生が終わりました');
+  },
 });
 
 MatchPicker.init((id) => {

@@ -4,6 +4,13 @@ const StatsView = (() => {
   const scope = document.getElementById('statsScope');
 
   let onPick = null;
+  let lastPicked = ''; // 最後に押した棒・文の見分け（描き直したあとも同じ場所を探せるように）
+
+  // 押したものを覚えてから、受け取った関数に渡す
+  function pick(id, choice) {
+    lastPicked = id;
+    onPick(choice);
+  }
 
   // onScopeChange('match' | 'all')：「この試合／全試合」が切り替わったとき
   // onSelect(choice)：棒が押されたとき。choice は { section, key, label, description }
@@ -28,7 +35,8 @@ const StatsView = (() => {
       const row = el('button', 'stats-row');
       row.type = 'button';
       row.title = item.label + '：' + item.count + '回（押すと、この場面だけを一覧に出します）';
-      row.onclick = () => onPick({
+      row.dataset.pickId = 'bar:' + section.index + '|' + group.key + '|' + item.label;
+      row.onclick = () => pick(row.dataset.pickId, {
         section: section.index,
         key: group.key,
         label: item.label,
@@ -58,11 +66,12 @@ const StatsView = (() => {
       wrap.appendChild(el('p', 'weakness-wait', 'まだ目立つ傾向はありません（同じ失点が2回以上あると出ます）'));
       return wrap;
     }
-    weakness.lines.forEach((line) => {
+    weakness.lines.forEach((line, i) => {
       const b = el('button', 'weakness-line', line.text);
       b.type = 'button';
       b.title = '押すと、この場面だけを順に再生します';
-      b.onclick = () => onPick(line.choice);
+      b.dataset.pickId = 'weakness:' + i;
+      b.onclick = () => pick(b.dataset.pickId, line.choice);
       wrap.appendChild(b);
     });
     return wrap;
@@ -98,5 +107,11 @@ const StatsView = (() => {
     });
   }
 
-  return { init, render, scope: () => scope.value };
+  // 最後に押した棒・文が見える所までスクロールする（なければ集計の先頭）
+  function revealPicked() {
+    const hit = [...box.querySelectorAll('[data-pick-id]')].find((e) => e.dataset.pickId === lastPicked);
+    (hit || box).scrollIntoView({ block: hit ? 'center' : 'start' });
+  }
+
+  return { init, render, revealPicked, scope: () => scope.value };
 })();

@@ -209,6 +209,12 @@ video { width: 100%; margin-top: 12px; background: #000; border-radius: 8px; dis
 /* 集計 */
 .stats-head { display: flex; justify-content: flex-end; margin-bottom: 8px; }
 .stats-head select { padding: 6px 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
+/* 短いお知らせ（toast.js）：画面の下の操作ボタンより上に出す */
+.toast { position: fixed; left: 50%; bottom: calc(var(--dock-h) + 16px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  z-index: 30; padding: 10px 16px; border-radius: 20px; background: rgba(31,111,74,.95); color: #fff; font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2); white-space: nowrap; }
+.toast[hidden] { display: none; }
+@media (min-width: 900px) { .toast { bottom: 24px; } }
 /* 弱点のひとこと（集計のいちばん上）。押すとその場面を再生する */
 .weakness { margin-bottom: 12px; padding: 10px 12px; background: #fff4f3; border: 1px solid #f3c9c5; border-radius: 10px; }
 .weakness-title { font-size: 13px; font-weight: bold; color: #b3342b; margin-bottom: 4px; }
