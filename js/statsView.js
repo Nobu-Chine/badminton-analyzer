@@ -46,13 +46,36 @@ const StatsView = (() => {
     return wrap;
   }
 
-  // summary：Stats.summarize の結果
-  function render(summary) {
+  // 弱点のひとこと（weakness：Weakness.find の結果）。文を押すと、棒と同じくその場面を順に再生する
+  function renderWeakness(weakness) {
+    const wrap = el('div', 'weakness');
+    wrap.appendChild(el('div', 'weakness-title', '弱点のひとこと'));
+    if (!weakness.ready) {
+      wrap.appendChild(el('p', 'weakness-wait', 'あと' + weakness.need + '点、失点を記録すると、ここにいちばん多い失点の傾向が出ます'));
+      return wrap;
+    }
+    if (weakness.lines.length === 0) {
+      wrap.appendChild(el('p', 'weakness-wait', 'まだ目立つ傾向はありません（同じ失点が2回以上あると出ます）'));
+      return wrap;
+    }
+    weakness.lines.forEach((line) => {
+      const b = el('button', 'weakness-line', line.text);
+      b.type = 'button';
+      b.title = '押すと、この場面だけを順に再生します';
+      b.onclick = () => onPick(line.choice);
+      wrap.appendChild(b);
+    });
+    return wrap;
+  }
+
+  // summary：Stats.summarize の結果 / weakness：Weakness.find の結果
+  function render(summary, weakness) {
     box.innerHTML = '';
     if (summary.total === 0) {
       box.appendChild(el('p', 'empty', 'まだ記録はありません'));
       return;
     }
+    box.appendChild(renderWeakness(weakness));
 
     // 合計（得点・失点）
     const tiles = el('div', 'stats-tiles');
