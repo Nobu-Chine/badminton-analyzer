@@ -17,6 +17,12 @@ const Settings = {
   //   コート奥：後ろの 1/4
   backZoneRatio: 0.25,
 
+  // 集計のいちばん上の「弱点のひとこと」（weakness.js）
+  weakness: {
+    minLosses: 3, // 失点がこれだけたまったら出す（少ないと、たまたまの1点で決めつけてしまうため）
+    minCount: 2,  // 1つの文にするのに必要な回数（1回だけのものは傾向とみなさない）
+  },
+
   // 細かく確認するための再生操作（playbackTools.js）
   playbackRates: [1, 0.5, 0.25], // 速度の選択肢（1 が普通の速さ）
   fineSeekSeconds: 3,            // 細かいバーで動かせる幅（今の位置の前後 何秒）

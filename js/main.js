@@ -79,7 +79,8 @@ function playRecord(record) {
 // 集計は「この試合」か「全試合」を選べる
 function refreshStats() {
   const records = StatsView.scope() === 'all' ? Matches.allRecords() : Matches.records();
-  StatsView.render(Stats.summarize(records, { scoreOf: Rules.score, zoneOf: Rules.zone }));
+  const summary = Stats.summarize(records, { scoreOf: Rules.score, zoneOf: Rules.zone });
+  StatsView.render(summary, Weakness.find(summary));
 }
 
 // この試合の動画の一覧（再生中・選択中・未選択の表示があるので、動画が切り替わったときも描き直す）
