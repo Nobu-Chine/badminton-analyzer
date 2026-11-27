@@ -8,10 +8,12 @@ const Playlist = (() => {
   let armed = false;   // その記録の場面が流れ始めたのを確かめたか（動画の切り替え直後の誤判定を防ぐ）
   let timer = null;
   let handlers = null;
+  let played = 0;      // 実際に流した件数（終わったときに伝える）
 
   // start(record)：その記録の場面を流し始める。流せなければ false（動画が選ばれていないなど）
   // now()：今の再生位置（秒） / ended()：動画の最後まで行ったか / pause()：止める
   // onChange()：再生中の記録が変わったとき・終わったとき（画面の描き直し用）
+  // onFinished(件数)：最後まで流し終えたとき（「止める」で途中でやめたときは呼ばない）
   function init(h) {
     handlers = h;
   }
@@ -32,7 +34,14 @@ const Playlist = (() => {
   function next() {
     index++;
     while (index < queue.length && !handlers.start(queue[index])) index++;
-    if (index >= queue.length) { stop(); return; }
+    if (index >= queue.length) {
+      const finished = played > 0; // 1件も流せなかったときは「終わった」とは言わない
+      const count = played;
+      stop();
+      if (finished && handlers.onFinished) handlers.onFinished(count);
+      return;
+    }
+    played++;
     endTime = queue[index].time + Settings.replayTailSeconds;
     armed = false;
     handlers.onChange();
@@ -44,6 +53,7 @@ const Playlist = (() => {
     // records を順に再生する。1件も流せなければ false
     play(records) {
       stop();
+      played = 0;
       queue = records.slice();
       next();
       if (index < 0) return false;
