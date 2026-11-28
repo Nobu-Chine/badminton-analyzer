@@ -23,6 +23,9 @@ const Settings = {
     minCount: 2,  // 1つの文にするのに必要な回数（1回だけのものは傾向とみなさない）
   },
 
+  // 動画を選んで最初に「▶ 再生」を押したとき、自動で全画面にするか（focusMode.js）。false で自動にしない
+  autoFullscreenOnFirstPlay: true,
+
   // 細かく確認するための再生操作（playbackTools.js）
   playbackRates: [1, 0.5, 0.25], // 速度の選択肢（1 が普通の速さ）
   fineSeekSeconds: 3,            // 細かいバーで動かせる幅（今の位置の前後 何秒）
