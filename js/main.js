@@ -124,7 +124,7 @@ Clips.init({
     const draftKey = RecordDialog.draftVideoKey();
     if (draftKey && draftKey !== Clips.currentKey()) RecordDialog.discard();
     refreshVideoList();
-    if (file) { Player.load(file); syncGuide(); return; }
+    if (file) { Player.load(file); firstPlayDone = false; syncGuide(); return; }
     // この試合の動画がまだ選ばれていないときは、選び直しを案内する
     const n = Clips.total();
     Player.clear(n > 0 ? 'この試合の動画（' + n + '本）を選ぶと再生できます<br>（まとめて選べます。順番はばらばらで大丈夫）' : '');
@@ -326,6 +326,15 @@ document.getElementById('recordHereBtn').onclick = () => {
 let backToFocus = false;
 FocusMode.init({ onExit: () => { backToFocus = false; } });
 document.getElementById('fullscreenBtn').onclick = () => { if (Player.hasVideo()) FocusMode.enter(); };
+
+// 動画を選んで最初に「▶ 再生」を押したときだけ、自動で全画面にする（settings.js の autoFullscreenOnFirstPlay）
+//   2回目からは自動にしない（止めて1コマ送りで確かめてから再生し直すたびに全画面になると邪魔なため）
+let firstPlayDone = false;
+document.getElementById('playBtn').addEventListener('click', () => {
+  if (firstPlayDone || !Settings.autoFullscreenOnFirstPlay || !Player.hasVideo() || Player.isPaused()) return;
+  firstPlayDone = true;
+  if (!FocusMode.isOn()) FocusMode.enter();
+});
 
 Court.init((x, y) => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
