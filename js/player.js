@@ -41,13 +41,6 @@ const Player = (() => {
     if (!seeking) seek.value = video.currentTime;
   }
 
-  // 全画面にする。iPhone は動画専用の全画面（標準の操作つき）、ほかはブラウザの全画面
-  function fullscreen() {
-    if (!hasVideo()) return;
-    if (video.webkitEnterFullscreen) { video.webkitEnterFullscreen(); return; }
-    if (video.requestFullscreen) video.requestFullscreen();
-  }
-
   // 動画をブラウザ内だけで再生（URL.createObjectURL はファイルをアップロードせずに参照する仕組み）
   function load(file) {
     if (video.src) URL.revokeObjectURL(video.src);
@@ -85,15 +78,12 @@ const Player = (() => {
     // 動画を切り替えると速さが 1倍 に戻るブラウザがあるので、選んだ速さに合わせ直す
     video.addEventListener('loadedmetadata', () => { video.playbackRate = video.defaultPlaybackRate; });
 
-    // 標準の操作の代わり：動画をタップで再生・停止、再生位置のバー、全画面
+    // 標準の操作の代わり：動画をタップで再生・停止、再生位置のバー（全画面は focusMode.js）
     video.addEventListener('click', togglePlay);
     video.addEventListener('timeupdate', showSeek);
     video.addEventListener('loadedmetadata', showSeek);
     seek.addEventListener('input', () => { seeking = true; video.currentTime = Number(seek.value); });
     seek.addEventListener('change', () => { seeking = false; });
-    document.getElementById('fullscreenBtn').onclick = fullscreen;
-    // ブラウザの全画面では、操作が何もないと困るので、全画面の間だけ標準の操作を出す
-    document.addEventListener('fullscreenchange', () => { video.controls = document.fullscreenElement === video; });
 
     // PC：スペースキーで再生・停止
     document.addEventListener('keydown', (e) => {

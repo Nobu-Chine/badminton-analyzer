@@ -73,9 +73,10 @@ const RecordDialog = (() => {
   // onSave(record) には、直した記録なら id が付いたまま渡す
   // onReview(draft)：「動画を見直す」で記録画面を閉じたとき（動画を見える所に出すため）
   // missingItems(draft)：足りない項目名の配列を返す / inactiveKeys(draft)：今は使わない項目の配列を返す
-  function init({ onSave, onReview, missingItems, inactiveKeys }) {
+  // onCancel()：「やめる」で記録をやめたとき
+  function init({ onSave, onReview, onCancel, missingItems, inactiveKeys }) {
     rules = { missingItems, inactiveKeys };
-    document.getElementById('cancelBtn').onclick = () => { dialog.close(); discard(); };
+    document.getElementById('cancelBtn').onclick = () => { dialog.close(); discard(); if (onCancel) onCancel(); };
     // 入力を残したまま閉じて、動画を見直せるようにする
     document.getElementById('reviewBtn').onclick = () => {
       dialog.close();

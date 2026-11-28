@@ -313,11 +313,19 @@ Player.onTimeChange(() => { syncSide(); syncMemo(); syncRally(); });
 
 // 「ここで記録 ↓」：シャトルが落ちた瞬間に押すと、止めてコート図まで移動する（あとはコートをタップするだけ）
 //   保存すると、今までどおり動画の所に戻って続きを再生する
+//   全画面で押したときは、全画面を抜けてコート図へ行き、保存したら全画面に戻る
 document.getElementById('recordHereBtn').onclick = () => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
   Player.pause();
+  if (FocusMode.isOn()) { FocusMode.exit(); backToFocus = true; }
   Court.reveal();
 };
+
+// 全画面モード：動画と操作ボタンだけを画面いっぱいに出す（focusMode.js）
+//   backToFocus：記録を保存したら全画面に戻るか。「✕ 全画面をやめる」や記録の「やめる」で取り消す（行ったり来たりが止まらないように）
+let backToFocus = false;
+FocusMode.init({ onExit: () => { backToFocus = false; } });
+document.getElementById('fullscreenBtn').onclick = () => { if (Player.hasVideo()) FocusMode.enter(); };
 
 Court.init((x, y) => {
   if (!Player.hasVideo()) { alert('先に動画を選んでください'); return; }
@@ -342,11 +350,14 @@ RecordDialog.init({
     refresh();
     // 記録したら、動画に戻って次を見る。次のラリーの印があればそこへ飛び、なければ続きを再生する
     //   ラリーの印を隠しているときは、見えない印へ飛ばない（続きを再生する）
-    Player.reveal();
+    //   全画面から記録しに来たときは、全画面に戻る
+    if (backToFocus) { backToFocus = false; FocusMode.enter(); } else Player.reveal();
     const next = Settings.showRallyTools ? RallyNav.nextStart(Matches.rallyStarts(record.videoKey), record.time) : null;
     if (next !== null && record.videoKey === Clips.currentKey()) Player.seekAndPlay(next);
     else Player.play();
   },
+  // 記録の「やめる」：全画面には戻らない（ここで抜けられるように）
+  onCancel: () => { backToFocus = false; },
   // 「動画を見直す」：入力は残したまま、動画が見える所まで動かす
   //   直している記録なら、その場面を流して確認できるようにする
   onReview(draft) {

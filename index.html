@@ -39,8 +39,10 @@
     </details>
     <div class="placeholder" id="placeholder">動画ファイルを選ぶとここで再生されます<br>（動画はサーバーに送られません）</div>
     <!-- iPhone などの標準の操作（10秒送りのアイコンが重なって出る）は使わず、アプリの操作だけにする。
-         動画をタップすると再生・停止。全画面のときだけ標準の操作が出る -->
+         動画をタップすると再生・停止。全画面もアプリの操作ボタンのまま（focusMode.js） -->
     <video id="video" playsinline></video>
+    <!-- 全画面モード（focusMode.js）のときだけ右上に出る -->
+    <button class="focus-exit" id="focusExitBtn">✕ 全画面をやめる</button>
     <div class="video-bar" id="videoBar" hidden>
       <input type="range" id="videoSeek" min="0" max="0" step="0.1" value="0" aria-label="再生位置">
       <button id="fullscreenBtn">⛶ 全画面</button>
@@ -241,6 +243,7 @@
 <script src="js/matches.js"></script>
 <script src="js/clips.js"></script>
 <script src="js/player.js"></script>
+<script src="js/focusMode.js"></script>
 <script src="js/playbackTools.js"></script>
 <script src="js/court.js"></script>
 <script src="js/courtView.js"></script>
